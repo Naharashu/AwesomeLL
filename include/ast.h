@@ -22,3 +22,11 @@ class BinaryNode : public ASTNode {
 	BinaryNode(astptr left_, astptr  right_, const token &op_) 
 	            : left(std::move(left_)), right(std::move(right_)), op(op_) {};
 };
+
+
+class UnaryNode : public ASTNode {
+	public:
+	token sign;
+	astptr left;
+	UnaryNode(astprr left_, const token &sign_) : left(std::move(left_)), sign(sign_) {};
+};
