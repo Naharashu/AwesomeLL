@@ -13,20 +13,27 @@ public:
     virtual ~ASTNode() = default;
 };
 
+class Node : public ASTNode {
+	public:
+	token tok;
+	Node(const token t) : tok(t) {};
+};
+
+
 
 class BinaryNode : public ASTNode {
 	public:
-	token op;
+	token_type op;
 	astptr left;
 	astptr right;
-	BinaryNode(astptr left_, astptr  right_, const token &op_) 
+	BinaryNode(astptr left_, astptr  right_, const token_type &op_) 
 	            : left(std::move(left_)), right(std::move(right_)), op(op_) {};
 };
 
 
 class UnaryNode : public ASTNode {
 	public:
-	token sign;
+	token_type sign;
 	astptr left;
-	UnaryNode(astprr left_, const token &sign_) : left(std::move(left_)), sign(sign_) {};
+	UnaryNode(astptr left_, const token_type &sign_) : left(std::move(left_)), sign(sign_) {};
 };

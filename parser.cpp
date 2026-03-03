@@ -2,35 +2,87 @@
 #include "include/ast.h"
 #include "include/common.h"
 #include "include/lexer.h"
+#include <cstdlib>
 #include <memory>
+#include <utility>
 
-astptr parser::parse_factor(token tok) {
+astptr parser::parse_factor() {
+    token tok = consume();
     if(tok.type == token_type::INT) {
-        auto a = std::make_unique<ASTNode>(NULL, NULL, tok);
+        return std::make_unique<Node>(tok);
+    }
+    else if(tok.type == token_type::L_BRACKET) {
+        astptr node = parse_expr();
+
+        token close = consume();
+        if (close.type != token_type::R_BRACKET) {
+            std::cerr << "Missing closing bracket\n";
+            exit(EXIT_FAILURE);
+        }
+
+        return node;
+
+    }
+    else {
+        std::cerr << "Error in parsing factor\n";
+        exit(EXIT_FAILURE); 
     }
 }
 
-astptr parser::parse_term(token tok) {
-    if(tok.type==token_type::STAR) {
-        token a = consume();
-        astptr fac = parse_factor(a);
-        auto term = std::make_unique<ASTNode>();
+astptr parser::parse_unary() {
+    token op = peek(1)[0];
+    if (op.type == token_type::PLUS || op.type != token_type::MINUS) {
+        consume();
+        astptr unary = parse_unary();
+        return std::make_unique<UnaryNode>(std::move(unary), op.type);
     }
+    return parse_factor();
+}
+
+astptr parser::parse_term() {
+    astptr node = parse_unary();
+
+    while (true) {
+        token op = peek(1)[0];
+        if (op.type != token_type::STAR && op.type != token_type::SLASH)
+            break; 
+
+        consume();
+        astptr rhs = parse_unary();
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+    }
+
+    return node;
 }
 
 
-astptr parser::parse_expr(token tok) {
-    astptr binnode = nullptr;
-    if(tok.type == INT) {
-        token a = consume();
-        astptr term = parse_term(a);
+astptr parser::parse_expr() {
+    astptr node = parse_term();
+
+    while (true) {
+        token op = peek(1)[0]; 
+        if (op.type != token_type::PLUS && op.type != token_type::MINUS)
+            break; 
+        consume();
+        astptr rhs = parse_term();
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
     }
+
+    return node;
 }
 
-astptr parser::parse_statement(token tok) {
-    astptr node = nullptr;
-    if(tok.type == token_type::IF) {
+astptr parser::parse_statement() {
+    token tok = peek(1)[0];
 
+    switch(tok.type) {
+        case token_type::IF:
+            return parse_if_statement();
+        case token_type::WHILE:
+            return parse_while_statement();
+        case token_type::IDENTIFIER: 
+            return parse_assignment();
+        default:
+            return parse_expr();  
     }
 
 }
@@ -38,7 +90,7 @@ astptr parser::parse_statement(token tok) {
 std::vector<std::unique_ptr<ASTNode>> parser::parse() {
     std::vector<std::unique_ptr<ASTNode>> parsed;
     while(indx<src.size()) {
-        parse_statement(consume());
+        parse_statement();
     }
     return parsed;
 }

@@ -14,10 +14,11 @@ class parser {
         src = a;
     }
     
-    astptr parse_expr(token tok);
-    astptr parse_term(token tok);
-    astptr parse_factor(token tok);
-    astptr parse_statement(token tok);
+    astptr parse_expr();
+    astptr parse_unary();
+    astptr parse_term();
+    astptr parse_factor();
+    astptr parse_statement();
     token consume() {
         if(indx > src.size()) {
             std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
