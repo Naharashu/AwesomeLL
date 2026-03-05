@@ -1,6 +1,5 @@
 #include "include/parser.h"
 #include "include/ast.h"
-#include "include/common.h"
 #include "include/lexer.h"
 #include <cstdlib>
 #include <memory>
@@ -67,9 +66,59 @@ astptr parser::parse_expr() {
     return node;
 }
 
+astptr parser::parse_assignment() {
+    token type = consume();
+    if(type.type == ID) {
+        consume(token_type::EQ);
+        token next = consume();
+        switch (next.type) {
+            case INT:
+            case DOUBLE:
+            case STRING:
+            case TRUE:
+            case FALSE:
+            case NULL_:
+                consume(SEMI);
+                return std::make_unique<AssignmentNode>(type, next.value);
+            default:
+                consume(SEMI);
+                return std::make_unique<AssignmentNode>(type, nothing{});
+    }
+    }
+    if(
+        type.type != INT_TYPE && 
+        type.type != DOUBLE_TYPE &&
+        type.type != STRING_TYPE &&
+        type.type != BOOL_TYPE &&
+        type.type != UNSIGNED_TYPE
+    ) {
+        std::cerr << "Error: expected one of next types to make variable: int, unsigned, bool, string, double\n";
+        exit(1);
+    }
+    token id = consume(token_type::ID);
+    if(peek(1)[0].type == SEMI) {
+        consume();
+        return std::make_unique<AssignmentNode>(id, nothing{});
+    }
+    consume(token_type::EQ);
+    token next = consume();
+    switch (next.type) {
+        case INT:
+        case DOUBLE:
+        case STRING:
+        case TRUE:
+        case FALSE:
+        case NULL_:
+            consume(SEMI);
+            return std::make_unique<AssignmentNode>(id, next.value);
+        default:
+            consume(SEMI);
+            return std::make_unique<AssignmentNode>(id, nothing{});
+    }
+}
+
 astptr parser::parse_statement() {
     token tok = peek(1)[0];
-    /*
     switch(tok.type) {
         case token_type::IF:
             return parse_if_statement();
@@ -84,7 +133,6 @@ astptr parser::parse_statement() {
         default:
             return parse_expr();  
     }
-    */
     return parse_expr();
 }
 

@@ -27,9 +27,9 @@ class Node : public ASTNode {
 
 class BinaryNode : public ASTNode {
 	public:
-	token_type op;
 	astptr left;
 	astptr right;
+	token_type op;
 	BinaryNode(astptr left_, astptr  right_, const token_type &op_) 
 	            : left(std::move(left_)), right(std::move(right_)), op(op_) {};
 	void print() const override {
@@ -42,11 +42,22 @@ class BinaryNode : public ASTNode {
 
 class UnaryNode : public ASTNode {
 	public:
-	token_type sign;
 	astptr left;
-	UnaryNode(astptr left_, const token_type &sign_) : left(std::move(left_)), sign(sign_) {};\
+	token_type sign;
+	UnaryNode(astptr left_, const token_type &sign_) : left(std::move(left_)), sign(sign_) {};
 	void print() const override {
 		std::cout << sign << '\n';
 		left->print();
+	}
+};
+
+class AssignmentNode : public ASTNode {
+	public:
+	token id;
+	token_value val;
+	AssignmentNode(const token &id_, const token_value &val_) : id(id_), val(val_) {};
+
+	void print() const override {
+		std::cout << id.type << '\n';
 	}
 };

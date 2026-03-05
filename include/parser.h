@@ -23,6 +23,7 @@ class parser {
     astptr parse_while_statement();
     astptr parse_for_statement();
     astptr parse_func_statement();
+    //astptr parse_string();
     astptr parse_assignment();
     token consume() {
         if(indx > src.size()) {

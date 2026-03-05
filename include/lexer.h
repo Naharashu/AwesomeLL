@@ -6,11 +6,17 @@
 #include <iostream>
 
 enum token_type {
-    VOID_TOK,
+    INT_TYPE,
+    UNSIGNED_TYPE,
+    BOOL_TYPE,
+    STRING_TYPE,
+    DOUBLE_TYPE,
+    VOID_TYPE,
     INT,
     DOUBLE,
     STRING,
-    BOOL,
+    TRUE,
+    FALSE,
     NULL_,
     PLUS,
     MINUS,

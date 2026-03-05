@@ -1,4 +1,5 @@
 #include "include/lexer.h"
+#include <cstddef>
 #define u64 long long
 
 token lexer::create_token(token_type a, token_value b) { return token{a, b}; }
@@ -11,7 +12,7 @@ bool lexer::is_letter(char c) {
 
 std::vector<token> lexer::lex(std::string src) {
   std::vector<token> lexed;
-  u64 i = 0;
+  size_t i = 0;
   while (i < src.size()) {
     char c = src[i];
     char next = (i + 1 < src.size()) ? src[i + 1] : '\0';
@@ -134,39 +135,7 @@ std::vector<token> lexer::lex(std::string src) {
       lexed.push_back(create_token(TWODOTS, nothing{}));
       break;
     }
-    case 'i': {
-      if(next=='f') {
-        lexed.push_back(create_token(IF, nothing{}));
-      }
-      break;
     }
-    case 'e': {
-      if(next=='l') {
-        if(src[i+2]=='i') {
-          lexed.push_back(create_token(ELIF, nothing{}));
-        }
-        else if(src[i+2]=='e') {
-          lexed.push_back(create_token(ELSE, nothing{}));
-        }
-      }
-      break;
-    }
-    case 'f': {
-      if(next=='u') {
-        lexed.push_back(create_token(FUNC, nothing{}));
-      }
-      else if(next=='o') {
-        lexed.push_back(create_token(FOR, nothing{}));
-      }
-      break;
-    }
-    case 'w': {
-      if(next=='h') {
-        lexed.push_back(create_token(WHILE, nothing{}));
-      }
-    }
-    }
-    
     if (is_letter(c)) {
       std::string id;
       while (i < src.size() &&
@@ -174,7 +143,33 @@ std::vector<token> lexer::lex(std::string src) {
         id.push_back(src[i]);
         i++;
       }
-      lexed.push_back(create_token(ID, id));
+      if (id == "if")
+        lexed.push_back(create_token(IF, nothing{}));
+      else if (id == "else")
+        lexed.push_back(create_token(ELSE, nothing{}));
+      else if (id == "elif")
+        lexed.push_back(create_token(ELIF, nothing{}));
+      else if (id == "while")
+        lexed.push_back(create_token(WHILE, nothing{}));
+      else if (id == "for")
+        lexed.push_back(create_token(FOR, nothing{}));
+      else if (id == "func")
+        lexed.push_back(create_token(FUNC, nothing{}));
+      else if (id == "true")
+        lexed.push_back(create_token(TRUE, true));
+      else if (id == "false")
+        lexed.push_back(create_token(FALSE, false));
+      else if (id == "int")
+        lexed.push_back(create_token(INT_TYPE, nothing{}));
+      else if (id == "unsigned")
+        lexed.push_back(create_token(UNSIGNED_TYPE, nothing{}));
+      else if (id == "null")
+        lexed.push_back(create_token(NULL_, nothing{}));
+      else if (id == "void") 
+        lexed.push_back(create_token(VOID_TYPE, nothing{}));
+      else
+        lexed.push_back(create_token(ID, id));
+
       continue;
     }
     if (c == '"') {
@@ -189,14 +184,14 @@ std::vector<token> lexer::lex(std::string src) {
     if (is_int(c)) {
       std::string number;
       while (i < src.size() && is_int(src[i])) {
-        if(src[i+1]=='.') {
+        if (src[i + 1] == '.') {
           number += src[i++];
-          while(i<src.size()&& is_int(src[i])) {
+          while (i < src.size() && is_int(src[i])) {
             number += src[i++];
           }
           char *endptr;
-          lexed.push_back(create_token(
-          DOUBLE, static_cast<token_value>(strtod(number.c_str(), &endptr))));
+          lexed.push_back(create_token(DOUBLE, static_cast<token_value>(strtod(
+                                                   number.c_str(), &endptr))));
         }
         number += src[i];
         i++;
@@ -212,8 +207,7 @@ std::vector<token> lexer::lex(std::string src) {
   return lexed;
 }
 
-
-/* 
+/*
 class lexer {
 private:
   token create_token(token_type a, token_value b) { return token{a, b}; }
