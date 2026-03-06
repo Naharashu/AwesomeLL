@@ -1,18 +1,24 @@
 #include "include/ast.h"
 #include "include/lexer.h"
 #include "include/parser.h"
+#include "include/generator.h"
+#include <fstream>
 
 int main() { 
     lexer lex;
-    std::string code = "1+3-5";
-    parser parser_(lex.lex(code));
-    for(auto x : lex.lex(code)) {
+    std::string code = "int x=1+3-5;\n int a=x-1;";
+    std::vector<token> toks = lex.lex(code);
+    parser parser_(toks);
+    for(auto x : toks) {
         std::cout << x.type << ' ';
     }
     std::cout << '\n';
     std::vector<astptr> res = parser_.parse();
-    for(auto &x : res) {
-        x->print();
-    }
+    generator gen;
+    std::string code_ = gen.generate(res);
+    std::ofstream out("temp.cpp", std::ios::out | std::ios::binary);
+    out.write(code_.c_str(), code_.size());
+    out.close();
+    //std::cout << code_ << std::endl;
     return 0; 
 }

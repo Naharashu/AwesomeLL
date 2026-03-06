@@ -42,6 +42,9 @@ class parser {
         }
         return src[indx++];
     }
+    inline token peek() {
+        return src.at(indx);
+    }
     std::vector<token> peek(int n) {
         std::vector<token> res;
         for(u64 i=indx;i<indx+n;i++) {

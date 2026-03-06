@@ -1,5 +1,6 @@
 #include "include/parser.h"
 #include "include/ast.h"
+#include "include/common.h"
 #include "include/lexer.h"
 #include <cstdlib>
 #include <memory>
@@ -8,6 +9,18 @@
 astptr parser::parse_factor() {
     token tok = consume();
     if(tok.type == token_type::INT) {
+        return std::make_unique<Node>(tok);
+    }
+    else if(tok.type == token_type::NULL_) {
+        return std::make_unique<Node>(tok);
+    }
+    else if(tok.type == token_type::TRUE) {
+        return std::make_unique<Node>(tok);
+    }
+    else if(tok.type == token_type::FALSE) {
+        return std::make_unique<Node>(tok);
+    }
+    else if(tok.type == token_type::ID) {
         return std::make_unique<Node>(tok);
     }
     else if(tok.type == token_type::L_BRACKET) {
@@ -19,13 +32,13 @@ astptr parser::parse_factor() {
 
     }
     else {
-        std::cerr << "Error in parsing factor\n";
+        std::cerr << "Error in parsing factor -> " +  std::to_string(tok.type) + '\n';
         exit(EXIT_FAILURE); 
     }
 }
 
 astptr parser::parse_unary() {
-    token op = peek(1)[0];
+    token op = peek();
     if (op.type == token_type::PLUS || op.type == token_type::MINUS) {
         consume();
         astptr unary = parse_unary();
@@ -38,7 +51,7 @@ astptr parser::parse_term() {
     astptr node = parse_unary();
 
     while (true) {
-        token op = peek(1)[0];
+        token op = peek();
         if (op.type != token_type::STAR && op.type != token_type::SLASH)
             break; 
 
@@ -55,7 +68,7 @@ astptr parser::parse_expr() {
     astptr node = parse_term();
 
     while (true) {
-        token op = peek(1)[0]; 
+        token op = peek(); 
         if (op.type != token_type::PLUS && op.type != token_type::MINUS)
             break; 
         consume();
@@ -66,24 +79,15 @@ astptr parser::parse_expr() {
     return node;
 }
 
+
+ 
 astptr parser::parse_assignment() {
     token type = consume();
     if(type.type == ID) {
-        consume(token_type::EQ);
-        token next = consume();
-        switch (next.type) {
-            case INT:
-            case DOUBLE:
-            case STRING:
-            case TRUE:
-            case FALSE:
-            case NULL_:
-                consume(SEMI);
-                return std::make_unique<AssignmentNode>(type, next.value);
-            default:
-                consume(SEMI);
-                return std::make_unique<AssignmentNode>(type, nothing{});
-    }
+        consume(EQ);
+        astptr value = parse_expr();
+        consume(SEMI);
+        return std::make_unique<AssignmentNode>(type, std::move(value));
     }
     if(
         type.type != INT_TYPE && 
@@ -96,30 +100,20 @@ astptr parser::parse_assignment() {
         exit(1);
     }
     token id = consume(token_type::ID);
-    if(peek(1)[0].type == SEMI) {
+    if(peek().type == SEMI) {
         consume();
-        return std::make_unique<AssignmentNode>(id, nothing{});
+        return std::make_unique<AssignmentNode>(id, astptr{});
     }
     consume(token_type::EQ);
-    token next = consume();
-    switch (next.type) {
-        case INT:
-        case DOUBLE:
-        case STRING:
-        case TRUE:
-        case FALSE:
-        case NULL_:
-            consume(SEMI);
-            return std::make_unique<AssignmentNode>(id, next.value);
-        default:
-            consume(SEMI);
-            return std::make_unique<AssignmentNode>(id, nothing{});
-    }
+    astptr value = parse_expr();
+    consume(SEMI);
+    return std::make_unique<AssignmentNodeExpr>(type.type,id, std::move(value));
 }
 
 astptr parser::parse_statement() {
-    token tok = peek(1)[0];
+    token tok = peek();
     switch(tok.type) {
+        /*
         case token_type::IF:
             return parse_if_statement();
         case token_type::WHILE:
@@ -128,7 +122,13 @@ astptr parser::parse_statement() {
             return parse_for_statement();
         case token_type::FUNC:
             return parse_func_statement();
-        case token_type::ID: 
+        */
+        case token_type::INT_TYPE: 
+        case token_type::BOOL_TYPE:
+        case token_type::DOUBLE_TYPE:
+        case token_type::STRING_TYPE:
+        case token_type::UNSIGNED_TYPE:
+        case token_type::ID:
             return parse_assignment();
         default:
             return parse_expr();  
@@ -139,7 +139,7 @@ astptr parser::parse_statement() {
 std::vector<std::unique_ptr<ASTNode>> parser::parse() {
     std::vector<std::unique_ptr<ASTNode>> parsed;
     while(indx<src.size() && src[indx].type != token_type::EOF_) {
-        parsed.push_back(parse_statement());
+        parsed.push_back(std::move(parse_statement()));
     }
     return parsed;
 }

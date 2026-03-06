@@ -1,5 +1,6 @@
 #include "include/lexer.h"
 #include <cstddef>
+#include <string>
 #define u64 long long
 
 token lexer::create_token(token_type a, token_value b) { return token{a, b}; }
@@ -163,8 +164,12 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(INT_TYPE, nothing{}));
       else if (id == "unsigned")
         lexed.push_back(create_token(UNSIGNED_TYPE, nothing{}));
+      else if (id == "double")
+        lexed.push_back(create_token(DOUBLE_TYPE, nothing{}));
+      else if (id == "string")
+        lexed.push_back(create_token(STRING_TYPE, nothing{}));
       else if (id == "null")
-        lexed.push_back(create_token(NULL_, nothing{}));
+        lexed.push_back(create_token(NULL_, std::string{"NULL"}));
       else if (id == "void") 
         lexed.push_back(create_token(VOID_TYPE, nothing{}));
       else

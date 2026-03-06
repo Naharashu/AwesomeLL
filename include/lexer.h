@@ -57,7 +57,7 @@ enum token_type {
 };
 
 using nothing = std::monostate;
-using token_value = std::variant<nothing, int, long long, double, std::string>;
+using token_value = std::variant<nothing, int, long long, double, bool, std::string>;
 
 struct token {
     token_type type;
