@@ -6,7 +6,7 @@
 
 int main() { 
     lexer lex;
-    std::string code = "int x=1+3-5;\n int a=x-1;";
+    std::string code = "i32 x=1+3-5;\n u16 a = 3; print(a)";
     std::vector<token> toks = lex.lex(code);
     parser parser_(toks);
     for(auto x : toks) {

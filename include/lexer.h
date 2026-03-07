@@ -6,13 +6,24 @@
 #include <iostream>
 
 enum token_type {
+    BYTE_TYPE,
+    WORD_TYPE,
     INT_TYPE,
-    UNSIGNED_TYPE,
+    LONG_TYPE,
+    UNSIGNED_8_TYPE,
+    UNSIGNED_16_TYPE,
+    UNSIGNED_32_TYPE,
+    UNSIGNED_64_TYPE,
     BOOL_TYPE,
     STRING_TYPE,
+    FLOAT_TYPE,
     DOUBLE_TYPE,
     VOID_TYPE,
+    BYTE,
+    WORD,
     INT,
+    LONG,
+    FLOAT,
     DOUBLE,
     STRING,
     TRUE,
@@ -46,6 +57,7 @@ enum token_type {
     DOT,
     TWODOTS,
     SEMI,
+    COMA,
     IF,
     ELIF,
     ELSE,
@@ -57,7 +69,7 @@ enum token_type {
 };
 
 using nothing = std::monostate;
-using token_value = std::variant<nothing, int, long long, double, bool, std::string>;
+using token_value = std::variant<nothing, long long, double, bool, std::string>;
 
 struct token {
     token_type type;

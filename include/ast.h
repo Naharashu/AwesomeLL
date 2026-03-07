@@ -12,6 +12,7 @@ typedef enum class ast_type {
 	DEFINEVAR,
 	ASSIGN,
 	UNARY,
+	FuncCall
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -71,7 +72,7 @@ class AssignmentNode : public ASTNode {
 	token id;
 	astptr val;
 	AssignmentNode(const token &id_, astptr val_) : id(id_), val(std::move(val_)) {
-		kind = ast_type::DEFINEVAR;
+		kind = ast_type::ASSIGN;
 	};
 
 	void print() const override {
@@ -91,4 +92,15 @@ class AssignmentNodeExpr : public ASTNode {
 	void print() const override {
 		std::cout << id.type << '\n';
 	}
+};
+
+class FuncCallNode : public ASTNode {
+	public:
+	token id;
+	std::vector<astptr> args;
+	FuncCallNode(const token &id_, std::vector<astptr> args_) : id(id_), args(std::move(args_)) {
+		kind = ast_type::FuncCall;
+	};
+
+	void print() const override {}
 };

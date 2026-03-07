@@ -1,5 +1,7 @@
 #include "include/lexer.h"
+#include "include/common.h"
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #define u64 long long
 
@@ -128,6 +130,10 @@ std::vector<token> lexer::lex(std::string src) {
       lexed.push_back(create_token(SEMI, nothing{}));
       break;
     }
+    case ',': {
+      lexed.push_back(create_token(COMA, nothing{}));
+      break;
+    }
     case '.': {
       lexed.push_back(create_token(DOT, nothing{}));
       break;
@@ -160,17 +166,33 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(TRUE, true));
       else if (id == "false")
         lexed.push_back(create_token(FALSE, false));
-      else if (id == "int")
+      else if (id == "i8")
+        lexed.push_back(create_token(BYTE_TYPE, nothing{}));
+      else if (id == "u8")
+        lexed.push_back(create_token(UNSIGNED_8_TYPE, nothing{}));
+      else if (id == "i16")
+        lexed.push_back(create_token(WORD_TYPE, nothing{}));
+      else if (id == "u16")
+        lexed.push_back(create_token(UNSIGNED_16_TYPE, nothing{}));
+      else if (id == "i32")
         lexed.push_back(create_token(INT_TYPE, nothing{}));
-      else if (id == "unsigned")
-        lexed.push_back(create_token(UNSIGNED_TYPE, nothing{}));
-      else if (id == "double")
+      else if (id == "u32")
+        lexed.push_back(create_token(UNSIGNED_32_TYPE, nothing{}));
+      else if (id == "i64")
+        lexed.push_back(create_token(LONG_TYPE, nothing{}));
+      else if (id == "u64")
+        lexed.push_back(create_token(UNSIGNED_64_TYPE, nothing{}));
+      else if (id == "f32")
+        lexed.push_back(create_token(FLOAT_TYPE, nothing{}));
+      else if (id == "f64")
         lexed.push_back(create_token(DOUBLE_TYPE, nothing{}));
       else if (id == "string")
         lexed.push_back(create_token(STRING_TYPE, nothing{}));
+      else if (id == "bool")
+        lexed.push_back(create_token(BOOL_TYPE, nothing{}));
       else if (id == "null")
         lexed.push_back(create_token(NULL_, std::string{"NULL"}));
-      else if (id == "void") 
+      else if (id == "void")
         lexed.push_back(create_token(VOID_TYPE, nothing{}));
       else
         lexed.push_back(create_token(ID, id));
@@ -178,12 +200,39 @@ std::vector<token> lexer::lex(std::string src) {
       continue;
     }
     if (c == '"') {
-      std::string string;
-      while (i < src.size() && (!(c == '"'))) {
-        string.push_back(src[i]);
+      i++;
+      std::string str;
+      while (i < src.size() && src[i] != '"') {
+        if (src[i] == '\\' && i + 1 < src.size()) {
+          i++;
+          switch (src[i]) {
+          case 'n':
+            str += '\n';
+            break;
+          case 't':
+            str += '\t';
+            break;
+          case '"':
+            str += '"';
+            break;
+          case '\\':
+            str += '\\';
+            break;
+          default:
+            str += src[i];
+            break;
+          }
+        } else {
+          str += src[i];
+        }
         i++;
       }
-      lexed.push_back(create_token(STRING, string));
+      if (i == src.size()) {
+        std::cerr << "Error: unterminated string literal\n";
+        exit(1);
+      }
+      i++;
+      lexed.push_back(create_token(STRING, str));
       continue;
     }
     if (is_int(c)) {
@@ -202,8 +251,17 @@ std::vector<token> lexer::lex(std::string src) {
         i++;
       }
       char *endptr;
-      lexed.push_back(create_token(
-          INT, static_cast<token_value>(strtoll(number.c_str(), &endptr, 10))));
+      auto val_ = strtoll(number.c_str(), &endptr, 10);
+      token_type type = INT;
+      if (fits<int8_t>(val_))
+        type = BYTE;
+      else if (fits<int16_t>(val_))
+        type = WORD;
+      else if (fits<int32_t>(val_))
+        type = INT;
+      else
+        type = LONG;
+      lexed.push_back(create_token(type, static_cast<token_value>(val_)));
       continue;
     }
     i++;

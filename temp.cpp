@@ -1,6 +1,9 @@
 #include <iostream>
+#include <cmath>
+#include <cstdint>
 int main() {
- long long x=((1 + 3) - 5);
- long long a=(x - 1);
+ int32_t x=((1 + 3) - 5);
+ uint16_t a=3;
+std::cout << a << std::endl;;
 return 0;
 }
