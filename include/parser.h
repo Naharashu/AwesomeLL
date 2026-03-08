@@ -22,8 +22,14 @@ class parser {
     astptr parse_if_statement();
     astptr parse_while_statement();
     astptr parse_for_statement();
+    astptr parse_return();
+    astptr parse_block();
     astptr parse_func_statement();
-    //astptr parse_string();
+    astptr parse_use();
+    astptr parse_comparison();
+    astptr parse_equality();
+    astptr parse_and();
+    astptr parse_or();
     astptr parse_assignment();
     token consume() {
         if(indx > src.size()) {
@@ -45,7 +51,10 @@ class parser {
     inline token peek() {
         return src.at(indx);
     }
-    std::vector<token> peek(int n) {
+    inline token peek(u8 i) {
+        return src.at(indx+i);
+    }
+    std::vector<token> peek_(int n) {
         std::vector<token> res;
         for(u64 i=indx;i<indx+n;i++) {
             res.push_back(src.at(i));

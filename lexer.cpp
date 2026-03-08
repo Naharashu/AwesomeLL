@@ -194,6 +194,10 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(NULL_, std::string{"NULL"}));
       else if (id == "void")
         lexed.push_back(create_token(VOID_TYPE, nothing{}));
+      else if (id == "use")
+        lexed.push_back(create_token(USE, nothing{}));
+      else if (id == "return")
+        lexed.push_back(create_token(RETURN, nothing{}));
       else
         lexed.push_back(create_token(ID, id));
 

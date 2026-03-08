@@ -64,6 +64,8 @@ enum token_type {
     WHILE,
     FOR,
     FUNC,
+    USE,
+    RETURN,
     ID,
     EOF_
 };

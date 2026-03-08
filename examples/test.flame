@@ -1,0 +1,8 @@
+func pow2(i32 a) i32 {
+    return a*a;
+}
+i32 a = pow2(2);
+if(a==4) {
+    print("abc");
+}
+print(a);

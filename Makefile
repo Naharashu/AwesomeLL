@@ -1,7 +1,16 @@
 CXX = g++
+CXX_CLANG = clang++
 
-test:
-	$(CXX) main.cpp lexer.cpp parser.cpp -pipe -g -O2 -o main -Wall -Wextra
+clangpp: clangpp_main
+
+all: main
+
+main:
+	$(CXX) main.cpp lexer.cpp parser.cpp -pipe -g -O2 -o flame -Wall -Wextra
+
+clangpp_main:
+	$(CXX_CLANG) main.cpp lexer.cpp parser.cpp -pipe -g -O2 -o flame -Wall -Wextra
 
 clean:
-	rm -f main
+	rm -f flame
+	rm -f temp_flame.cpp

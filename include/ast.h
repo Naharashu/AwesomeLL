@@ -12,7 +12,16 @@ typedef enum class ast_type {
 	DEFINEVAR,
 	ASSIGN,
 	UNARY,
-	FuncCall
+	FuncCall,
+	COND,
+	MODULE,
+	BLOCK,
+	FUNC,
+	FUNC_ARG,
+	RETURN,
+	IF,
+	ELIF,
+	ELSE,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -35,6 +44,24 @@ class Node : public ASTNode {
 	}
 };
 
+class ReturnNode : public ASTNode {
+	public:
+	astptr value;
+	ReturnNode(astptr node) : value(std::move(node)) {
+		kind = ast_type::RETURN;
+	};
+	void print() const override {}
+};
+
+class ArgumentNode : public ASTNode {
+	public:
+	token type;
+	token id;
+	ArgumentNode(const token t, const token id_) : type(t), id(id_) {
+		kind = ast_type::FUNC_ARG;
+	};
+	void print() const override {}
+};
 
 
 class BinaryNode : public ASTNode {
@@ -45,6 +72,22 @@ class BinaryNode : public ASTNode {
 	BinaryNode(astptr left_, astptr  right_, const token_type &op_) 
 	            : left(std::move(left_)), right(std::move(right_)), op(op_) {
 					kind = ast_type::BINARY;
+				};
+	void print() const override {
+		left->print();
+		std::cout << op << '\n';
+		right->print();
+	}
+};
+
+class CondNode : public ASTNode {
+	public:
+	astptr left;
+	astptr right;
+	token_type op;
+	CondNode(astptr left_, astptr  right_, const token_type &op_) 
+	            : left(std::move(left_)), right(std::move(right_)), op(op_) {
+					kind = ast_type::COND;
 				};
 	void print() const override {
 		left->print();
@@ -104,3 +147,52 @@ class FuncCallNode : public ASTNode {
 
 	void print() const override {}
 };
+
+class BlockNode : public ASTNode {
+	public:
+	std::vector<astptr> stmts;
+	BlockNode(std::vector<astptr> stmts_) : stmts(std::move(stmts_)) {
+		kind = ast_type::BLOCK;
+	};
+
+	void print() const override {}
+};
+
+class IfNode : public ASTNode {
+	public:
+	astptr cond;
+	astptr block;
+	astptr next;
+	token_type type;
+	IfNode(astptr c, astptr b, astptr n, token_type t) : cond(std::move(c)), block(std::move(b)), next(std::move(n)), type(t) {
+		kind = ast_type::IF;
+	}
+	void print() const override {}
+};
+
+
+
+class FuncNode : public ASTNode {
+	public:
+	token id;
+	token type;
+	std::vector<astptr> args;
+	astptr block;
+	FuncNode(const token id_, const token type_, std::vector<astptr> args_, astptr block_) : id(id_), type(type_), args(std::move(args_)), block(std::move(block_)) {
+		kind = ast_type::FUNC;
+	};
+
+	void print() const override {}
+};
+
+
+class ModuleNode : public ASTNode {
+	public:
+	std::string name;
+	ModuleNode(const std::string &a) : name(a) {
+		kind = ast_type::MODULE;
+	}
+
+	void print() const override {}
+};
+
