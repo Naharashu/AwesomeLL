@@ -232,6 +232,31 @@ astptr parser::parse_if_statement() {
   return node;
 }
 
+astptr parser::parse_while_statement() {
+  consume(WHILE);
+  consume(L_BRACKET);
+  astptr cond = parse_or();
+  consume(R_BRACKET);
+  astptr block = parse_block();
+  return std::make_unique<LoopNode>(std::move(cond), std::move(block), WHILE);
+}
+
+astptr parser::parse_break_continue() {
+  token a = consume();
+  if(a.type == BREAK) {
+    consume(SEMI);
+    return std::make_unique<BreakNode>();
+  }
+  else if(a.type == CONTINUE) {
+    consume(SEMI);
+    return std::make_unique<ContinueNode>();
+  }
+  else {
+    std::cerr << "Error in parsing break or continue, expected break or continue\n";
+    exit(EXIT_FAILURE);
+  }
+}
+
 astptr parser::parse_assignment() {
   if (peek().type == ID && peek(1).type == L_BRACKET) {
     astptr node = parse_factor();
@@ -265,9 +290,9 @@ astptr parser::parse_statement() {
   switch (tok.type) {
   case token_type::IF:
     return parse_if_statement();
-  /*
   case token_type::WHILE:
       return parse_while_statement();
+  /*
   case token_type::FOR:
       return parse_for_statement();
   */
@@ -279,6 +304,9 @@ astptr parser::parse_statement() {
     return parse_use();
   case token_type::RETURN:
     return parse_return();
+  case token_type::BREAK:
+  case token_type::CONTINUE:
+    return parse_break_continue();
   case token_type::BYTE_TYPE:
   case token_type::WORD_TYPE:
   case token_type::INT_TYPE:

@@ -8,6 +8,12 @@
 #include "common.h"
 
 class generator {
+    private:
+    int indent = 0;
+
+    std::string pad() {
+        return std::string(indent * 4, ' ');
+    }
     public:
     std::string cpp_code;
     std::string header;
@@ -87,11 +93,11 @@ class generator {
                     args += genCode(n->args.at(0));
                     return args;
                 }
-                for(auto &x : n->args) {
-                    args += genCode(x);
-                    args += " , ";
+                for(u64 i=0;i<n->args.size();i++) {
+                    args += genCode(n->args[i]);
+                    if(i + 1 < n->args.size())
+                        args += ", ";
                 }
-                if(args.size()>1) args.erase(args.length() - 2);
                 return variant2string(n->id.value) + '(' + args + ')';
             }
             case ast_type::COND: {
@@ -112,11 +118,14 @@ class generator {
             case ast_type::BLOCK: {
                 auto n = static_cast<BlockNode*>(node.get());
                 std::string code = " {\n";
+                indent++;
                 for(auto &x : n->stmts) {
+                    code += pad();
                     code += genCode(x);
-                    code += ';';
+                    code += ";\n";
                 }
-                code += "\n }";
+                indent--;
+                code += pad() + "}";
                 return code;
             }
             case ast_type::FUNC: {
@@ -127,11 +136,11 @@ class generator {
                 code += ' ';
                 code += variant2string(n->id.value);
                 code += '(';
-                for(auto &x : n->args) {
-                    code += genCode(x);
-                    code += ", ";
+                for(u64 i=0;i<n->args.size();i++) {
+                    code += genCode(n->args[i]);
+                    if(i + 1 < n->args.size())
+                        code += ", ";
                 }
-                code.erase(code.length()-2);
                 code += ") ";
                 code += genCode(n->block);
                 code += '\n';
@@ -171,6 +180,23 @@ class generator {
                 else code += " else " + genCode(n->block);
                 if(n->next) code += " " + genCode(n->next);
                 return code;
+            }
+            case ast_type::LOOP: {
+                auto n = static_cast<LoopNode*>(node.get());
+                std::string code;
+                if(n->type==WHILE) {
+                    code += " while(";
+                    code += genCode(n->cond);
+                    code += ") ";
+                    code += genCode(n->block);
+                }
+                return code;
+            }
+            case ast_type::BREAK: {
+                return "break";
+            }
+            case ast_type::CONTINUE: {
+                return "continue";
             }
             default:
                 return "";

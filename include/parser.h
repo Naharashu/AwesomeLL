@@ -30,6 +30,7 @@ class parser {
     astptr parse_equality();
     astptr parse_and();
     astptr parse_or();
+    astptr parse_break_continue();
     astptr parse_assignment();
     token consume() {
         if(indx > src.size()) {

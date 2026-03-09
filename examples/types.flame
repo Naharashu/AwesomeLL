@@ -11,6 +11,8 @@ f64 j;
 bool m;
 string l;
 
-void void_func() {
+func void_func() void {
     print("FooBar");
 }
+
+void_func();

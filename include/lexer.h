@@ -62,6 +62,8 @@ enum token_type {
     ELIF,
     ELSE,
     WHILE,
+    BREAK,
+    CONTINUE,
     FOR,
     FUNC,
     USE,

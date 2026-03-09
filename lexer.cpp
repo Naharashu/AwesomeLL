@@ -158,6 +158,10 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(ELIF, nothing{}));
       else if (id == "while")
         lexed.push_back(create_token(WHILE, nothing{}));
+      else if (id == "break")
+        lexed.push_back(create_token(BREAK, nothing{}));
+      else if (id == "continue")
+        lexed.push_back(create_token(CONTINUE, nothing{}));
       else if (id == "for")
         lexed.push_back(create_token(FOR, nothing{}));
       else if (id == "func")

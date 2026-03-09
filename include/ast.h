@@ -20,8 +20,9 @@ typedef enum class ast_type {
 	FUNC_ARG,
 	RETURN,
 	IF,
-	ELIF,
-	ELSE,
+	LOOP,
+	BREAK,
+	CONTINUE
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -185,6 +186,17 @@ class FuncNode : public ASTNode {
 	void print() const override {}
 };
 
+class LoopNode : public ASTNode {
+	public:
+	astptr cond;
+	astptr block;
+	token_type type;
+	LoopNode(astptr c, astptr b, token_type t) : cond(std::move(c)), block(std::move(b)), type(t) {
+		kind = ast_type::LOOP;
+	}
+	void print() const override {}
+};
+
 
 class ModuleNode : public ASTNode {
 	public:
@@ -196,3 +208,12 @@ class ModuleNode : public ASTNode {
 	void print() const override {}
 };
 
+struct BreakNode : ASTNode {
+    BreakNode() { kind = ast_type::BREAK; }
+	void print() const override {}
+};
+
+struct ContinueNode : ASTNode {
+    ContinueNode() { kind = ast_type::CONTINUE; }
+	void print() const override {}
+};

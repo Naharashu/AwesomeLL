@@ -26,8 +26,10 @@ int main(int argc, char* argv[]) {
     file.close();
     std::vector<token> toks = lex.lex(code);
     parser parser_(toks);
+    u64 i = 0;
     for(auto x : toks) {
-        std::cout << x.type << ' ';
+        std::cout << x.type << ": " << i << ' ';
+        i++;
     }
     std::cout << '\n';
     std::vector<astptr> res = parser_.parse();
