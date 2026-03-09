@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
         	std::cout << x.type << ": " << i << ' ';
        		 i++;
     	}
+    	std::cout << '\n';
     }
-    std::cout << '\n';
     std::vector<astptr> res = parser_.parse();
     generator gen;
     std::string code_ = gen.generate(res);

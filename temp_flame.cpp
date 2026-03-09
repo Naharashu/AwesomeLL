@@ -1,14 +1,15 @@
 #include <iostream>
 #include <cstdint>
 using namespace std;
+ int32_t  pow2( int32_t a)  {
+      return ((a * a));
+}
 int main() {
- int32_t i=0;
- while((i < 4))  {
-    std::cout << i << std::endl;
-    if((i == 2)) {
-        break;
-    };
-     i=(i + 1);
-};
+;
+ int32_t a=pow2(2);
+if((a == 4)) {
+    std::cout << "abc" << std::endl;
+}
+std::cout << a << std::endl;
 return 0;
 }
