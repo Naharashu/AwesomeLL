@@ -8,14 +8,18 @@
 
 int main(int argc, char* argv[]) { 
 	if(argc>1) {
-		if(strcmp(argv[1], "-v")==0) std::cout << "Flame compiler 0.2\nBy Naharashu\n";
-		return 0;
+		if(strcmp(argv[1], "-v")==0) {
+			std::cout << "Flame compiler 0.2\nBy Naharashu\n";
+			return 0;
+		}
 	}
 	bool compile_into_bin = true;
 	std::string out_name = "out";
+	bool lexer_output = true;
 	for(int i=0;i<argc;i++) {
 		if(strcmp(argv[i], "-C")==0) compile_into_bin = false;
 		if(strcmp(argv[i], "-o")==0) out_name = argc>i+1 ? argv[i+1] : "out";
+		if(strcmp(argv[i], "-no-lexer-debug")==0) lexer_output = false;
 	}
     lexer lex;
     std::string code;
@@ -33,15 +37,21 @@ int main(int argc, char* argv[]) {
     std::vector<token> toks = lex.lex(code);
     parser parser_(toks);
     u64 i = 0;
-    for(auto x : toks) {
-        std::cout << x.type << ": " << i << ' ';
-        i++;
+    if(lexer_output) {
+	for(auto x : toks) {
+        	std::cout << x.type << ": " << i << ' ';
+       		 i++;
+    	}
     }
     std::cout << '\n';
     std::vector<astptr> res = parser_.parse();
     generator gen;
     std::string code_ = gen.generate(res);
     std::ofstream out("temp_flame.cpp", std::ios::out | std::ios::binary);
+    if(!out.is_open()) {
+	std::cerr << "Cannot open temp file to generate cpp code\n"; 
+	return 1;
+    }
     out.write(code_.c_str(), code_.size());
     out.close();
     if(compile_into_bin) {

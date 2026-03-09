@@ -6,10 +6,10 @@ clangpp: clangpp_main
 all: main
 
 main:
-	$(CXX) main.cpp lexer.cpp parser.cpp -pipe -g -O2 -o flame -Wall -Wextra
+	$(CXX) main.cpp lexer.cpp parser.cpp -pipe -O2 -o flame -Wall -Wextra 
 
 clangpp_main:
-	$(CXX_CLANG) main.cpp lexer.cpp parser.cpp -pipe -g -O2 -o flame -Wall -Wextra
+	$(CXX_CLANG) main.cpp lexer.cpp parser.cpp -pipe -fuse-ld=lld -O2 -o flame -Wall -Wextra
 
 clean:
 	rm -f flame
