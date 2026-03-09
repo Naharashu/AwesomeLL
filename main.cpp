@@ -7,6 +7,16 @@
 #include <string>
 
 int main(int argc, char* argv[]) { 
+	if(argc>1) {
+		if(strcmp(argv[1], "-v")==0) std::cout << "Flame compiler 0.2\nBy Naharashu\n";
+		return 0;
+	}
+	bool compile_into_bin = true;
+	std::string out_name = "out";
+	for(int i=0;i<argc;i++) {
+		if(strcmp(argv[i], "-C")==0) compile_into_bin = false;
+		if(strcmp(argv[i], "-o")==0) out_name = argc>i+1 ? argv[i+1] : "out";
+	}
     lexer lex;
     std::string code;
     code.clear();
@@ -14,11 +24,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: flame [file.flame] -o [DEFAULT=out]\n";
         return 1; 
     }
-    std::string out_name = "out";
     std::string line;
-    if(argc>=4) {
-        out_name = argv[3];
-    }
     std::ifstream file(argv[1]);
     while(std::getline(file, line)) {
         code += line + '\n';
@@ -38,8 +44,10 @@ int main(int argc, char* argv[]) {
     std::ofstream out("temp_flame.cpp", std::ios::out | std::ios::binary);
     out.write(code_.c_str(), code_.size());
     out.close();
-    std::string output = "g++ temp_flame.cpp -o " + out_name; //" && rm -f temp.cpp";
-    system(output.c_str());
+    if(compile_into_bin) {
+    	std::string output = "g++ temp_flame.cpp -o " + out_name; //" && rm -f temp.cpp";
+    	system(output.c_str());
+    }
     //std::cout << code_ << std::endl;
     return 0; 
 }
