@@ -19,6 +19,7 @@ enum token_type {
     FLOAT_TYPE,
     DOUBLE_TYPE,
     VOID_TYPE,
+    AUTO_TYPE,
     BYTE,
     WORD,
     INT,

@@ -50,6 +50,7 @@ inline bool is_it_type(token a) {
   case UNSIGNED_16_TYPE:
   case UNSIGNED_32_TYPE:
   case UNSIGNED_64_TYPE:
+  case AUTO_TYPE:
     return true;
   default:
     return false;
@@ -109,5 +110,7 @@ inline std::string type_in_cpp(token a) {
     type = "uint64_t ";
   if (a.type == VOID_TYPE)
     type = "void ";
+  if (a.type == AUTO_TYPE)
+    type = "auto ";
   return type;
 }
