@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdint>
 int32_t main()  {
-    int32_t a[] = {2};
-    std::cout << a[0] << std::endl;
+    auto x=2;
+    std::cout << x << std::endl;
     return (0);
 }

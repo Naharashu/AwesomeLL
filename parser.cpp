@@ -379,6 +379,7 @@ astptr parser::parse_statement() {
   case token_type::UNSIGNED_16_TYPE:
   case token_type::UNSIGNED_32_TYPE:
   case token_type::UNSIGNED_64_TYPE:
+  case token_type::AUTO_TYPE:
   case token_type::ID:
     return parse_assignment();
   default:

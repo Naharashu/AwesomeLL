@@ -1,0 +1,5 @@
+func main() i32 {
+	auto x = 2;
+	print(x);
+	return 0;
+}

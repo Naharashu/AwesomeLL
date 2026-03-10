@@ -124,6 +124,8 @@ public:
         type = " uint32_t ";
       if (n->type_ == UNSIGNED_64_TYPE)
         type = " uint64_t ";
+      if (n->type_ == AUTO_TYPE)
+        type = "auto ";
       std::string val = n->val ? genCode(n->val) : "";
       return type + variant2string(n->id.value) +
              (val.empty() ? "=" + nullval : "=" + val);
