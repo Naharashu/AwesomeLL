@@ -293,7 +293,7 @@ public:
     case ast_type::ARRAY: {
     	auto n = static_cast<ArrayNode*>(node.get());
     	std::string code;
-    	code += type_in_cpp(n->type);
+    	std::string type = type_in_cpp(n->type);
     	std::string values_ = "{";
     	if(!n->values.empty()) {
     		for(u64 i=0;i<n->values.size();i++) {
@@ -306,12 +306,12 @@ public:
     		values_ = "";
     	}
     	if(n->size!=-1) {
-    		if(!n->values.empty()) return n->id + "[" + std::to_string(n->size) + "] = " + values_; 
-    		return n->id + "[" + std::to_string(n->size) + "]";
+    		if(!n->values.empty()) return  type +  n->id + "[" + std::to_string(n->size) + "] = " + values_; 
+    		return type + n->id + "[" + std::to_string(n->size) + "]";
     	}
     	else {
-    		if(!n->values.empty()) return n->id + "[] = " + values_;
-    		return n->id + "[]";
+    		if(!n->values.empty()) return type +  n->id + "[] = " + values_;
+    		return type + n->id + "[]";
     	}
     }
     case ast_type::ARRAY_ACCESS: {

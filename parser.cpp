@@ -31,6 +31,12 @@ astptr parser::parse_factor() {
       consume(R_BRACKET);
       return std::make_unique<FuncCallNode>(tok, std::move(args_));
     }
+    if(peek().type==L_SQ_BRACKET) {
+    	consume();
+    	astptr i=parse_expr();
+    	consume(R_SQ_BRACKET);
+    	return std::make_unique<ArrayAccessNode>(tok, std::move(i));
+    }
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::L_BRACKET) {
     astptr node = parse_expr();
@@ -39,11 +45,6 @@ astptr parser::parse_factor() {
 
     return node;
 
-  } else if (tok.type == ID && peek().type == L_SQ_BRACKET) {
-    consume();
-    astptr i = parse_expr();
-    consume(R_SQ_BRACKET);
-    return std::make_unique<ArrayAccessNode>(tok, std::move(i));
   } else {
     std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
                      " at " + std::to_string(indx - 1) + '\n';
