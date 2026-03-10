@@ -59,7 +59,9 @@ astptr parser::parse_factor() {
     return node;
 
   } else if (peek().type == L_SQ_BRACKET) {
-    return;
+    i64 i = variant2int<long long>(consume().value);
+    consume(R_SQ_BRACKET);
+    return std::make_unique<ArrayAccessNode>(tok, i);
   } else {
     std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
                      " at " + std::to_string(indx - 1) + '\n';
@@ -272,6 +274,7 @@ astptr parser::parse_break_continue() {
 }
 
 astptr parser::parse_array() {
+  if(peek().type == ID && peek(1).type == L_SQ_BRACKET) return parse_factor();
   if (!is_it_type(peek()) || !(peek(1).type == L_SQ_BRACKET)) {
     std::cerr << "Error in parsing array, expected syntax like this: Type[]";
     exit(1);
