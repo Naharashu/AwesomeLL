@@ -58,6 +58,8 @@ astptr parser::parse_factor() {
 
     return node;
 
+  } else if (peek().type == L_SQ_BRACKET) {
+    return;
   } else {
     std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
                      " at " + std::to_string(indx - 1) + '\n';
@@ -247,31 +249,65 @@ astptr parser::parse_for_statement() {
   astptr var = parse_assignment();
   astptr cond = parse_or();
   consume(SEMI);
-  token_value id = consume(ID).value;
-  token a = consume();
-  consume();
-  astptr thing;
-  if(a.type == PLUS) thing = std::make_unique<IncDecVarNode>(0, id);
-  else thing = std::make_unique<IncDecVarNode>(1, id);
+  astptr thing = parse_assignment();
   consume(R_BRACKET);
   astptr block = parse_block();
-  return std::make_unique<ForNode>(std::move(cond), std::move(block), std::move(var), std::move(thing));
+  return std::make_unique<ForNode>(std::move(cond), std::move(block),
+                                   std::move(var), std::move(thing));
 }
 
 astptr parser::parse_break_continue() {
   token a = consume();
-  if(a.type == BREAK) {
+  if (a.type == BREAK) {
     consume(SEMI);
     return std::make_unique<BreakNode>();
-  }
-  else if(a.type == CONTINUE) {
+  } else if (a.type == CONTINUE) {
     consume(SEMI);
     return std::make_unique<ContinueNode>();
-  }
-  else {
-    std::cerr << "Error in parsing break or continue, expected break or continue\n";
+  } else {
+    std::cerr
+        << "Error in parsing break or continue, expected break or continue\n";
     exit(EXIT_FAILURE);
   }
+}
+
+astptr parser::parse_array() {
+  if (!is_it_type(peek()) || !(peek(1).type == L_SQ_BRACKET)) {
+    std::cerr << "Error in parsing array, expected syntax like this: Type[]";
+    exit(1);
+  }
+  token_type type = consume().type;
+  consume(L_SQ_BRACKET);
+  token size;
+  bool size_defined = false;
+  if (peek().type != R_SQ_BRACKET) {
+    size = consume();
+    size_defined = true;
+  }
+  consume(R_SQ_BRACKET);
+  std::string id = variant2string(consume(ID).value);
+  if (peek().type == SEMI) {
+    if (size_defined)
+      return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id,
+                                         variant2int<long>(size.value));
+    else
+      return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id, -1);
+  }
+  consume(EQ);
+  consume(L_SQ_BRACKET);
+  std::vector<astptr> values;
+  while (peek().type != R_SQ_BRACKET) {
+    astptr value = parse_factor();
+    consume(COMA);
+    values.push_back(std::move(value));
+  }
+  consume(R_SQ_BRACKET);
+  consume(SEMI);
+  if (size_defined)
+    return std::make_unique<ArrayNode>(type, std::move(values), id,
+                                       variant2int<long>(size.value));
+  else
+    return std::make_unique<ArrayNode>(type, std::move(values), id, -1);
 }
 
 astptr parser::parse_assignment() {
@@ -279,29 +315,30 @@ astptr parser::parse_assignment() {
     astptr node = parse_factor();
     consume(SEMI);
     return node;
-  }
-  else if ((
-    peek().type == ID &&
-    peek(1).type == PLUS &&
-    peek(2).type == PLUS 
-  ) || (
-    peek().type == ID &&
-    peek(1).type == MINUS &&
-    peek(2).type == MINUS
-  )) {
+  } else if ((peek().type == ID && peek(1).type == PLUS &&
+              peek(2).type == PLUS) ||
+             (peek().type == ID && peek(1).type == MINUS &&
+              peek(2).type == MINUS)) {
     token_value id = consume(ID).value;
     token a = consume();
     consume();
-    if(a.type == PLUS) return std::make_unique<IncDecVarNode>(0, id);
-    else return std::make_unique<IncDecVarNode>(1, id);
+    if (a.type == PLUS)
+      return std::make_unique<IncDecVarNode>(0, id);
+    else
+      return std::make_unique<IncDecVarNode>(1, id);
   }
+  if (is_it_type(peek()) && peek(1).type == L_SQ_BRACKET)
+    return parse_array();
   token type = consume();
   if (type.type == ID) {
-    if(peek().type == PLUS || peek().type == MINUS || peek().type == STAR || peek().type == SLASH) {
+    if (peek().type == PLUS || peek().type == MINUS || peek().type == STAR ||
+        peek().type == SLASH) {
       token_type op = consume().type;
       consume(EQ);
       astptr value = parse_or();
-      return std::make_unique<ReAssignmentNodeExpr>(op, type, value);
+      if (peek().type == SEMI)
+        consume(SEMI);
+      return std::make_unique<ReAssignmentNodeExpr>(op, type, std::move(value));
     }
     consume(EQ);
     astptr value = parse_or();
@@ -329,9 +366,9 @@ astptr parser::parse_statement() {
   case token_type::IF:
     return parse_if_statement();
   case token_type::WHILE:
-      return parse_while_statement();
+    return parse_while_statement();
   case token_type::FOR:
-      return parse_for_statement();
+    return parse_for_statement();
   case token_type::L_BRACES:
     return parse_block();
   case token_type::FUNC:

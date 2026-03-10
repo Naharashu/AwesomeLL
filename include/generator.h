@@ -266,6 +266,30 @@ public:
         code += genCode(n->block);
         return code;
     }
+    case ast_type::REASSIGNVAR: {
+      auto n = static_cast<ReAssignmentNodeExpr*>(node.get());
+      std::string op;
+      switch (n->type_) {
+        case PLUS: {
+          op = " += ";
+          break;
+        }
+        case MINUS: {
+          op = " -= ";
+          break;
+        }
+        case STAR: {
+          op = " *= ";
+          break;
+        }
+        case SLASH: {
+          op = " /= ";
+          break;
+        }
+        default: break;
+      }
+      return variant2string(n->id.value) + op + genCode(n->val);
+    }
     default:
       throw std::runtime_error("Unknown AST node");
     }

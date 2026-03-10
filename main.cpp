@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     u64 i = 0;
     if(lexer_output) {
 	for(auto x : toks) {
-        	std::cout << x.type << ": " << i << ' ';
+        	std::cout << '(' << i << ") " << x.type << ' ';
        		 i++;
     	}
     	std::cout << '\n';

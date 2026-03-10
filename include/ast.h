@@ -27,6 +27,7 @@ typedef enum class ast_type {
 	VAR_INC_DEC,
 	FOR,
 	REASSIGNVAR,
+	ARRAY,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -256,5 +257,16 @@ class IncDecVarNode : public ASTNode {
 	token_value id;
 	IncDecVarNode(u8 t, token_value n) : type(t), id(n) {
 		kind = ast_type::VAR_INC_DEC;
+	}
+};
+
+class ArrayNode : public ASTNode {
+	public:
+	token_type type;
+	std::vector<astptr> values;
+	std::string id;
+	long size;
+	ArrayNode(const token_type &t, std::vector<astptr> v, const std::string &i, long s) : type(t), values(std::move(v)), id(i), size(s) {
+		kind = ast_type::ARRAY;
 	}
 };
