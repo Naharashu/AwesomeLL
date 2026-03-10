@@ -3,9 +3,9 @@ Flame is programming language
 
 
 #### Changelog
-0.2:
-  > added while,
+0.3:
+  > added for,
 
-  > fixed void functions declaration,
+  > added ++, -- and +=/-=/*= and /= for variables,
 
-  > added break, continue
+  > added arrays
