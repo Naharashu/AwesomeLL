@@ -1,0 +1,3 @@
+func pow2(i64 a) i64 {
+    return a*a;
+}

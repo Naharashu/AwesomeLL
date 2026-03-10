@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fstream>
 
 astptr parser::parse_factor() {
   token tok = consume();
@@ -100,7 +101,21 @@ astptr parser::parse_use() {
   consume(USE);
   std::string name = variant2string(consume(ID).value) + "." + "flame";
   consume(SEMI);
-  return std::make_unique<ModuleNode>(name);
+  std::ifstream file(name);
+  std::ostringstream oss;
+  if(!file) {
+    std::cerr << "Cannot open file " << name << std::endl;
+    file.close();
+    exit(1);
+  }
+  oss << file.rdbuf();
+  std::string code = oss.str();
+  file.close();
+  lexer l;
+  std::vector<token> toks = l.lex(code);
+  parser p(toks);
+  std::vector<astptr> module = p.parse();
+  return std::make_unique<ModuleNode>(std::move(module));
 }
 
 astptr parser::parse_comparison() {

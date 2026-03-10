@@ -1,8 +1,0 @@
-func pow2(i64 a) i64 {
-    return a*a;
-}
-
-func main() i32 {
-    print(pow2(5));
-    return 0;
-}

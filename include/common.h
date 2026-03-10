@@ -114,3 +114,40 @@ inline std::string type_in_cpp(token a) {
     type = "auto ";
   return type;
 }
+
+inline std::string op2string(token_type a) {
+  std::string op;
+  if (a == PLUS)
+    op = " + ";
+  if (a == MINUS)
+    op = " - ";
+  if (a == STAR)
+    op = " * ";
+  if (a == SLASH)
+    op = " / ";
+  return op;
+}
+
+inline std::string variant2value(token tok) {
+  if (tok.type == BYTE)
+    return std::to_string((char)variant2int<long long>(tok.value));
+  if (tok.type == WORD)
+    return std::to_string((short)variant2int<long long>(tok.value));
+  if (tok.type == INT)
+    return std::to_string((int)variant2int<long long>(tok.value));
+  if (tok.type == LONG)
+    return std::to_string(variant2int<long long>(tok.value));
+  if (tok.type == FLOAT)
+    return std::to_string((float)variant2double(tok.value));
+  if (tok.type == DOUBLE)
+    return std::to_string(variant2double(tok.value));
+  if (tok.type == STRING)
+    return "R\"(" + variant2string(tok.value) + ")\"";
+  if (tok.type == TRUE || tok.type == FALSE)
+    return std::to_string(variant2bool(tok.value));
+  if (tok.type == NULL_)
+    return variant2string(tok.value);
+  if (tok.type == ID)
+    return variant2string(tok.value);
+  return "";
+}
