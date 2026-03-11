@@ -16,10 +16,10 @@ build/%.o: %.cpp
 
 install:
 	mkdir -p $(HOME_)/bin/flame
-	cp ./flame $(HOME_)/bin/flame
-	ln -s $(HOME_)/bin/flame flame
+	cp ./flame $(HOME_)/bin/flame/flame
+	ln -s $(HOME_)/bin/flame/flame flame
 
 clean:
 	rm -f flame
-	rm -f build/*.o
+	rm -f build/*.o *.o
 	rm -f temp_flame.cpp
