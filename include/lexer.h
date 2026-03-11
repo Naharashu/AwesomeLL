@@ -34,7 +34,8 @@ enum token_type {
     MINUS,
     STAR,
     SLASH,
-    EQ, // 27
+    MOD,
+    EQ, // 28
     EQUAL,
     BIGGER,
     LESS,
@@ -52,7 +53,7 @@ enum token_type {
     R_BRACKET,
     L_BRACKET,
     R_SQ_BRACKET,
-    L_SQ_BRACKET, // 45
+    L_SQ_BRACKET, // 46
     R_BRACES,
     L_BRACES,
     DOT,

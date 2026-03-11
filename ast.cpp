@@ -131,6 +131,7 @@ std::string FuncNode::gen(generator &g) {
 }
 
 std::string ArgumentNode::gen(generator &g) {
+  (void)g;
   std::string type_ = type_in_cpp(type);
   return type_ + variant2string(id.value);
 }
@@ -160,11 +161,12 @@ std::string LoopNode::gen(generator &g) {
   return code;
 }
 
-std::string BreakNode::gen(generator &g) { return "break"; }
+std::string BreakNode::gen(generator &g) { (void)g; return "break"; }
 
-std::string ContinueNode::gen(generator &g) { return "continue"; }
+std::string ContinueNode::gen(generator &g) { (void)g; return "continue"; }
 
 std::string IncDecVarNode::gen(generator &g) {
+  (void)g;
   if (type == 0) {
     return variant2string(id) + "++";
   } else
@@ -200,6 +202,10 @@ std::string ReAssignmentNodeExpr::gen(generator &g) {
     op = " /= ";
     break;
   }
+  case MOD: {
+    op = " %= ";
+    break;
+  }
   default:
     break;
   }
@@ -233,6 +239,10 @@ std::string ArrayNode::gen(generator &g) {
 
 std::string ArrayAccessNode::gen(generator &g) {
     return variant2string(id.value) + "[" + g.gencode(index) + "]";
+}
+
+std::string ArrayChangeNode::gen(generator &g) {
+    return variant2string(id.value) + "[" + g.gencode(index) + "] = " + g.gencode(value);
 }
 
 std::string ModuleNode::gen(generator &g) {

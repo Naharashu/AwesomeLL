@@ -37,7 +37,10 @@ astptr parser::parse_factor() {
     	consume();
     	astptr i=parse_expr();
     	consume(R_SQ_BRACKET);
-    	return std::make_unique<ArrayAccessNode>(tok, std::move(i));
+      if(peek().type != EQ) return std::make_unique<ArrayAccessNode>(tok, std::move(i));
+      consume(EQ);
+      astptr value = parse_expr();
+      return std::make_unique<ArrayChangeNode>(tok, std::move(i), std::move(value));
     }
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::L_BRACKET) {
@@ -70,7 +73,7 @@ astptr parser::parse_term() {
 
   while (true) {
     token op = peek();
-    if (op.type != token_type::STAR && op.type != token_type::SLASH)
+    if (op.type != token_type::STAR && op.type != token_type::SLASH && op.type != token_type::MOD )
       break;
 
     consume();
@@ -289,6 +292,7 @@ astptr parser::parse_array() {
   consume(R_SQ_BRACKET);
   std::string id = variant2string(consume(ID).value);
   if (peek().type == SEMI) {
+    consume(SEMI);
     if (size_defined)
       return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id,
                                          variant2int<long long>(size.value));
@@ -299,7 +303,7 @@ astptr parser::parse_array() {
   consume(L_SQ_BRACKET);
   std::vector<astptr> values;
   while (peek().type != R_SQ_BRACKET) {
-    astptr value = parse_factor();
+    astptr value = parse_or();
     if (peek().type == COMA)
         consume();
     values.push_back(std::move(value));
@@ -335,7 +339,7 @@ astptr parser::parse_assignment() {
   token type = consume();
   if (type.type == ID) {
     if (peek().type == PLUS || peek().type == MINUS || peek().type == STAR ||
-        peek().type == SLASH) {
+        peek().type == SLASH || peek().type == MOD ) {
       token_type op = consume().type;
       consume(EQ);
       astptr value = parse_or();

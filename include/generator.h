@@ -53,8 +53,12 @@ public:
   }
 
   std::string generate(std::vector<astptr> &nodes) {
-    header = "#include <iostream>\n"
-             "#include <cstdint>\n";
+    if(header.find("<iostream>\n")==std::string::npos) { 
+      header += "#include <iostream>\n";
+    }
+    if(header.find("<cstdint>")==std::string::npos) {
+      header += "#include <cstdint>\n";
+    }
     for (auto &x : nodes) {
       std::string c = gencode(x);
       if (c.empty())

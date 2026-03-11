@@ -125,6 +125,8 @@ inline std::string op2string(token_type a) {
     op = " * ";
   if (a == SLASH)
     op = " / ";
+  if (a == MOD)
+    op = " % ";
   return op;
 }
 
@@ -150,4 +152,12 @@ inline std::string variant2value(token tok) {
   if (tok.type == ID)
     return variant2string(tok.value);
   return "";
+}
+
+inline void removeSubstring(std::string& a, const std::string& b) {
+  u64 pos = a.find(b);
+  while(pos != std::string::npos) {
+    a.erase(pos, b.length());
+    pos = a.find(b);
+  }
 }

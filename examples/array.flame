@@ -2,5 +2,7 @@ use functions;
 func main() i32 {
 	i32[] a= [2];
 	print(pow2(a[0]));
+	a[0] = 3;
+	print(pow2(a[0]));
 	return 0;
 }

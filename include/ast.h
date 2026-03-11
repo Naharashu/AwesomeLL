@@ -264,9 +264,7 @@ class IncDecVarNode : public ASTNode {
 public:
   u8 type;
   token_value id;
-  IncDecVarNode(u8 t, token_value n) : type(t), id(n) {
-    kind = ast_type::VAR_INC_DEC;
-  }
+  IncDecVarNode(u8 t, token_value n) : type(t), id(n) {}
   std::string gen(generator &g) override;
 };
 
@@ -290,6 +288,15 @@ public:
   ArrayAccessNode(token id_, astptr i_) : id(id_), index(std::move(i_)) {
     kind = ast_type::ARRAY_ACCESS;
   }
+  std::string gen(generator &g) override;
+};
+
+class ArrayChangeNode : public ASTNode {
+public:
+  token id;
+  astptr index;
+  astptr value;
+  ArrayChangeNode(token id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {}
   std::string gen(generator &g) override;
 };
 

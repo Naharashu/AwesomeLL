@@ -40,6 +40,10 @@ std::vector<token> lexer::lex(std::string src) {
       lexed.push_back(create_token(SLASH, nothing{}));
       break;
     }
+    case '%': {
+      lexed.push_back(create_token(MOD, nothing{}));
+      break;
+    }
     case '(': {
       lexed.push_back(create_token(L_BRACKET, nothing{}));
       break;
