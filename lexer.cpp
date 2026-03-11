@@ -2,6 +2,7 @@
 #include "include/common.h"
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <string>
 #define u64 long long
@@ -279,197 +280,106 @@ std::vector<token> lexer::lex(std::string src) {
   return lexed;
 }
 
-/*
-class lexer {
-private:
-  token create_token(token_type a, token_value b) { return token{a, b}; }
-  bool is_int(char c) {
-    switch (c) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      return true;
+std::string disassemble_tok(token tok) {
+  switch (tok.type) {
+    case BYTE_TYPE: {
+      return "i8";
     }
-    return false;
-  }
-
-  bool is_letter(char c) {
-    bool result = false;
-
-    if ((c >= 'A') && (c <= 'Z'))
-      result = true;
-    if ((c >= 'a') && (c <= 'z'))
-      result = true;
-
-    return result;
-  }
-
-public:
-  std::vector<token> lex(std::string src) {
-    std::vector<token> lexed;
-    u64 i = 0;
-    while (i < src.size()) {
-      char c = src[i];
-      char next = (i + 1 < src.size()) ? src[i + 1] : '\0';
-      if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
-        i++;
-        continue;
-      }
-      switch (c) {
-      case '+': {
-        lexed.push_back(create_token(PLUS, nothing{}));
-        break;
-      }
-      case '-': {
-        lexed.push_back(create_token(MINUS, nothing{}));
-        break;
-      }
-      case '*': {
-        lexed.push_back(create_token(STAR, nothing{}));
-        break;
-      }
-      case '/': {
-        lexed.push_back(create_token(SLASH, nothing{}));
-        break;
-      }
-      case '(': {
-        lexed.push_back(create_token(L_BRACKET, nothing{}));
-        break;
-      }
-      case ')': {
-        lexed.push_back(create_token(R_BRACKET, nothing{}));
-        break;
-      }
-      case '[': {
-        lexed.push_back(create_token(L_SQ_BRACKET, nothing{}));
-        break;
-      }
-      case ']': {
-        lexed.push_back(create_token(R_SQ_BRACKET, nothing{}));
-        break;
-      }
-      case '{': {
-        lexed.push_back(create_token(L_BRACES, nothing{}));
-        break;
-      }
-      case '}': {
-        lexed.push_back(create_token(R_BRACES, nothing{}));
-        break;
-      }
-      case '=': {
-        if (next == '=') {
-          lexed.push_back(create_token(EQUAL, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(EQ, nothing{}));
-        break;
-      }
-      case '>': {
-        if (next == '=') {
-          lexed.push_back(create_token(BEQUAL, nothing{}));
-          i++;
-          break;
-        } else if (next == '>') {
-          lexed.push_back(create_token(SHIFT_R, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(BIGGER, nothing{}));
-        break;
-      }
-      case '<': {
-        if (next == '=') {
-          lexed.push_back(create_token(LEQUAL, nothing{}));
-          i++;
-          break;
-        } else if (next == '<') {
-          lexed.push_back(create_token(SHIFT_L, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(LESS, nothing{}));
-        break;
-      }
-      case '!': {
-        if (next == '=') {
-          lexed.push_back(create_token(NEQUAL, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(NOT, nothing{}));
-        break;
-      }
-      case '&': {
-        if (next == '&') {
-          lexed.push_back(create_token(AND, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(AND_B, nothing{}));
-        break;
-      }
-      case '|': {
-        if (next == '|') {
-          lexed.push_back(create_token(OR, nothing{}));
-          i++;
-          break;
-        }
-        lexed.push_back(create_token(OR_B, nothing{}));
-        break;
-      }
-      case ';': {
-        lexed.push_back(create_token(SEMI, nothing{}));
-        break;
-      }
-      case '.': {
-        lexed.push_back(create_token(DOT, nothing{}));
-        break;
-      }
-      case ':': {
-        lexed.push_back(create_token(TWODOTS, nothing{}));
-        break;
-      }
-      }
-      if (is_letter(c)) {
-        std::string id;
-        while (i < src.size() &&
-               (is_letter(src[i]) || is_int(src[i]) || src[i] == '_')) {
-          id.push_back(src[i]);
-          i++;
-        }
-        lexed.push_back(create_token(ID, id));
-        continue;
-      }
-      if (c == '"') {
-        std::string string;
-        while (i < src.size() && (!(c == '"'))) {
-          string.push_back(src[i]);
-          i++;
-        }
-        lexed.push_back(create_token(STRING, string));
-        continue;
-      }
-      if (is_int(c)) {
-        std::string number;
-        while (i < src.size() && is_int(src[i])) {
-          number += src[i];
-          i++;
-        }
-        char *endptr;
-        lexed.push_back(create_token(INT, static_cast<token_value>(strtoll(
-                                              number.c_str(), &endptr, 10))));
-      }
-      i++;
+    case WORD_TYPE: {
+      return "i16";
     }
-    return lexed;
+    case INT_TYPE: {
+      return "i32";
+    }
+    case LONG_TYPE: {
+      return "i32";
+    }
+    case AUTO_TYPE: {
+      return "auto";
+    }
+    case UNSIGNED_8_TYPE: {
+      return "u8";
+    }
+    case UNSIGNED_16_TYPE: {
+      return "u32";
+    }
+    case UNSIGNED_32_TYPE: {
+      return "u32";
+    }
+    case UNSIGNED_64_TYPE: {
+      return "u64";
+    }
+    case FLOAT_TYPE: {
+      return "f32";
+    }
+    case DOUBLE_TYPE: {
+      return "f64";
+    }
+    case BOOL_TYPE: {
+      return "bool";
+    }
+    case STRING_TYPE: {
+      return "bool";
+    }
+    case SEMI: {
+      return ";";
+    }
+    case ID: {
+      return variant2string(tok.value);
+    }
+    default:
+      return std::to_string(tok.type);
   }
-};
-*/
+}
+
+std::string disassemble_tok_type(token_type type) {
+  switch (type) {
+    case BYTE_TYPE: {
+      return "i8";
+    }
+    case WORD_TYPE: {
+      return "i16";
+    }
+    case INT_TYPE: {
+      return "i32";
+    }
+    case LONG_TYPE: {
+      return "i32";
+    }
+    case AUTO_TYPE: {
+      return "auto";
+    }
+    case UNSIGNED_8_TYPE: {
+      return "u8";
+    }
+    case UNSIGNED_16_TYPE: {
+      return "u32";
+    }
+    case UNSIGNED_32_TYPE: {
+      return "u32";
+    }
+    case UNSIGNED_64_TYPE: {
+      return "u64";
+    }
+    case FLOAT_TYPE: {
+      return "f32";
+    }
+    case DOUBLE_TYPE: {
+      return "f64";
+    }
+    case BOOL_TYPE: {
+      return "bool";
+    }
+    case STRING_TYPE: {
+      return "bool";
+    }
+    case SEMI: {
+      return ";";
+    }
+    case ID: {
+      return "ID";
+    }
+    default:
+      return std::to_string(type);
+  }
+}

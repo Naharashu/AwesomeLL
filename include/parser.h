@@ -45,7 +45,7 @@ class parser {
             exit(1);
         }
         if(src[indx].type != expected) {
-            std::cerr << "Error: (Parser) - unexpected token " << src[indx].type << " in index " << indx << ", " << "expected " << expected << '\n';
+            std::cerr << "Error: (Parser) - unexpected token " << disassemble_tok(src[indx]) << " in index " << indx << ", " << "expected " << disassemble_tok_type(expected) << '\n';
             exit(1);
         }
         return src[indx++];
