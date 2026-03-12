@@ -1,10 +1,23 @@
 #include "include/ast.h"
+#include "include/common.h"
 #include "include/generator.h"
+#include "include/lexer.h"
 #include <sstream>
 #include <string>
-std::string Node::gen(generator &g) { return variant2value(tok); }
+std::string Node::gen(generator &g) { 
+  (void)g;
+  return variant2value(tok); 
+}
 
 std::string BinaryNode::gen(generator &g) {
+  bool float_ = false;
+  if(left->kind==ast_type::JUSTNODE) {
+    auto n=static_cast<Node*>(left.get());
+    if(n->tok.type == DOUBLE) float_ = true;
+  }
+  if(float_ && op==MOD) {
+    throw TranspileTimeError("Cannot do modulo for floats, use fmod from stdlib instead\n");
+  }
   return "(" + g.gencode(left) + op2string(op) + g.gencode(right) + ")";
 }
 

@@ -4,6 +4,8 @@
 #include "common.h"
 #include "lexer.h"
 #include "parser.h"
+#include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -11,34 +13,16 @@
 #include <string>
 #include <vector>
 
-/*
-if (x->kind == ast_type::MODULE) {
-        auto n = static_cast<ModuleNode *>(x.get());
-        lexer lex;
-        std::string code;
-        std::string line;
-        std::ifstream mod(n->name.c_str());
-        while (std::getline(mod, line)) {
-          code += line + '\n';
-        }
-        mod.close();
-        std::vector<token> toks = lex.lex(code);
-        parser parser_(toks);
-        std::vector<astptr> res = parser_.parse();
-        for (auto &y : res) {
-          std::string yc = genCode(y);
-          if (yc.empty())
-            continue;
-          if (y->kind != ast_type::MODULE && y->kind != ast_type::BLOCK &&
-              y->kind != ast_type::IF)
-            cpp_code << yc + ';';
-          else
-            cpp_code << yc;
-          cpp_code << '\n';
-        }
-        continue;
-      }
-*/
+class TranspileTimeError : public std::exception {
+  private:
+  std::string message;
+  public:
+  TranspileTimeError(const char* msg) : message(msg) {}
+
+  const char * what() const noexcept override {
+    return message.c_str();
+  }
+};
 
 class generator {
 public:
@@ -60,7 +44,14 @@ public:
       header += "#include <cstdint>\n";
     }
     for (auto &x : nodes) {
-      std::string c = gencode(x);
+      std::string c;
+      try {
+        c = gencode(x);
+      } catch (const TranspileTimeError& e) {
+        std::cout << e.what();
+        nodes.clear();
+        throw e;
+      }
       if (c.empty())
         continue;
 
@@ -72,6 +63,7 @@ public:
         cpp_code << c;
       cpp_code << '\n';
     }
+    if(cpp_code.str()=="") throw TranspileTimeError("Code is empty, stopping...");
     return header + cpp_code.str();
   }
 };

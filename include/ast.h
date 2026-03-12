@@ -30,6 +30,7 @@ typedef enum class ast_type {
   REASSIGNVAR,
   ARRAY,
   ARRAY_ACCESS,
+  ARRAY_CHANGE,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -39,7 +40,8 @@ public:
   ast_type kind;
   virtual ~ASTNode() = default;
   virtual std::string gen(generator &g) {
-	return "";
+    (void)g;
+	  return "";
   }
   virtual void print() const {}
 };
@@ -296,7 +298,9 @@ public:
   token id;
   astptr index;
   astptr value;
-  ArrayChangeNode(token id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {}
+  ArrayChangeNode(token id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {
+    kind = ast_type::ARRAY_CHANGE;
+  }
   std::string gen(generator &g) override;
 };
 

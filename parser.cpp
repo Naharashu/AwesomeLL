@@ -51,8 +51,8 @@ astptr parser::parse_factor() {
     return node;
 
   } else {
-    std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
-                     " at " + std::to_string(indx - 1) + '\n';
+    std::cerr << "Error in parsing factor -> " + disassemble_tok_type(tok.type) +
+                     " at line " + std::to_string(line) + '\n';
     exit(EXIT_FAILURE);
   }
 }
@@ -179,7 +179,7 @@ astptr parser::parse_return() {
 astptr parser::parse_block() {
   consume(L_BRACES);
   std::vector<astptr> stmts;
-  while (peek().type != R_BRACES) {
+  while (peek().type != R_BRACES && indx < src.size()) {
     stmts.push_back(parse_statement());
   }
   consume(R_BRACES);
@@ -211,6 +211,10 @@ astptr parser::parse_func_statement() {
 astptr parser::parse_if_statement() {
   consume(IF);
   consume(L_BRACKET);
+  if(peek().type==R_BRACKET) {
+    std::cerr << "Error in parsing if: expected condition at line " << line << '\n';
+    exit(1);
+  }
   astptr cond = parse_or();
   consume(R_BRACKET);
   astptr block = parse_block();
@@ -368,6 +372,10 @@ astptr parser::parse_assignment() {
 }
 
 astptr parser::parse_statement() {
+  while(src.at(indx).type == NEWLINE) {
+            indx++;
+            line++;
+  }
   token tok = peek();
   switch (tok.type) {
   case token_type::IF:
@@ -412,7 +420,7 @@ astptr parser::parse_statement() {
 
 std::vector<std::unique_ptr<ASTNode>> parser::parse() {
   std::vector<std::unique_ptr<ASTNode>> parsed;
-  while (indx < src.size() && src[indx].type != token_type::EOF_) {
+  while (peek().type != token_type::EOF_) {
     parsed.push_back(parse_statement());
   }
   return parsed;

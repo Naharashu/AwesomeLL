@@ -7,6 +7,8 @@
 #include <fstream>
 #include <string>
 
+bool error_exit = false;
+
 int main(int argc, char *argv[]) {
   if (argc > 1) {
     if (strcmp(argv[1], "-v") == 0) {
@@ -59,14 +61,20 @@ int main(int argc, char *argv[]) {
   u64 i = 0;
   if (lexer_output) {
     for (auto x : toks) {
-      std::cout << '(' << i << ") " << x.type << ' ';
+      std::cout << '(' << i << ") " << disassemble_tok_type(x.type) << '\n';
       i++;
     }
-    std::cout << '\n';
   }
-  std::vector<astptr> res = parser_.parse();
+  std::vector<astptr> res;
+  res.reserve(toks.size());
+  res = parser_.parse();
   generator gen;
-  std::string code_ = gen.generate(res);
+  std::string code_;
+  try {
+    code_ = gen.generate(res);
+  } catch (TranspileTimeError& e) {
+    return 1;
+  }
   std::ofstream out("temp_flame.cpp", std::ios::out | std::ios::binary);
   if (!out.is_open()) {
     std::cerr << "Cannot open temp file to generate cpp code\n";

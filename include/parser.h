@@ -9,9 +9,12 @@
 class parser {
     public:
     std::vector<token> src;
-    u64 indx = 0;
+    u64 indx;
+    i64 line;
     parser(const std::vector<token> &a) {
         src = a;
+        line = 0;
+        indx = 0;
     }
     
     astptr parse_expr();
@@ -34,8 +37,12 @@ class parser {
     astptr parse_array();
     astptr parse_assignment();
     token consume() {
-        if(indx > src.size()) {
+        if(indx >= src.size()) {
             std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
+        }
+        while(src[indx].type == NEWLINE) {
+            indx++;
+            line++;
         }
         return src[indx++];
     }
@@ -44,21 +51,35 @@ class parser {
             std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
             exit(1);
         }
+        while(src[indx].type == NEWLINE) {
+            indx++;
+            line++;
+        }
         if(src[indx].type != expected) {
-            std::cerr << "Error: (Parser) - unexpected token " << disassemble_tok(src[indx]) << " in index " << indx << ", " << "expected " << disassemble_tok_type(expected) << '\n';
+            std::cerr << "Error: (Parser) - unexpected token " << disassemble_tok_type(src[indx].type) << " at line " << line << ", " << "expected " << disassemble_tok_type(expected) << '\n';
             exit(1);
         }
         return src[indx++];
     }
     inline token peek() {
+        while(src.at(indx).type == NEWLINE) {
+            indx++;
+            line++;
+        }
         return src.at(indx);
     }
     inline token peek(u8 i) {
+        while(src.at(indx+i).type == NEWLINE) {
+            i++;
+        }
         return src.at(indx+i);
     }
     std::vector<token> peek_(int n) {
         std::vector<token> res;
         for(u64 i=indx;i<indx+n;i++) {
+            while(src[indx].type == NEWLINE) {
+                i++;
+            }
             res.push_back(src.at(i));
         }
         return res;

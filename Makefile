@@ -1,5 +1,5 @@
-CXX = g++
-CXX_FLAGS = -O2 -Wall -Wextra
+\CXX = g++
+CXX_FLAGS = -g -O1 -Wall -Wextra
 CXX_OBJ = build/lexer.o build/parser.o build/main.o build/ast.o
 HOME_ = $(HOME)
 
@@ -9,7 +9,7 @@ clang: main
 all: main
 
 main: $(CXX_OBJ)
-	$(CXX) $(CXX_OBJ) -o flame
+	$(CXX) $(CXX_OBJ) -flto=thin -o flame
 
 build/%.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@

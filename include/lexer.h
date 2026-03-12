@@ -71,6 +71,7 @@ enum token_type {
     USE,
     RETURN,
     ID,
+    NEWLINE,
     EOF_
 };
 
@@ -92,5 +93,4 @@ public:
   std::vector<token> lex(std::string src);
 };
 
-std::string disassemble_tok(token tok);
 std::string disassemble_tok_type(token_type tok);

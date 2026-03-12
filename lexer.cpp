@@ -21,7 +21,12 @@ std::vector<token> lexer::lex(std::string src) {
   while (i < src.size()) {
     char c = src[i];
     char next = (i + 1 < src.size()) ? src[i + 1] : '\0';
-    if (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
+    if (c == ' ' || c == '\t' || c == '\r') {
+      i++;
+      continue;
+    }
+    if(c == '\n') {
+      lexed.push_back(create_token(NEWLINE, nothing{}));
       i++;
       continue;
     }
@@ -328,6 +333,47 @@ std::string disassemble_tok_type(token_type type) {
     case ID: {
       return "ID";
     }
+    case L_BRACKET: {
+      return "(";
+    }
+    case R_BRACKET: {
+      return ")";
+    }
+    case L_BRACES: {
+      return "{";
+    }
+    case R_BRACES: {
+      return "}";
+    }
+    case BYTE:
+    case WORD:
+    case INT:
+    case LONG:
+      return "number";
+    case FUNC:
+      return "func";
+    case RETURN:
+      return "return";
+    case WHILE:
+      return "while";
+    case FOR:
+      return "for";
+    case TRUE:
+      return "true";
+    case FALSE:
+      return "false";
+    case PLUS:
+      return "+";
+    case MINUS:
+      return "-";
+    case STAR:
+      return "*";
+    case SLASH:
+      return "/";
+    case MOD:
+      return "%";
+    case EOF_:
+      return "EOF";
     default:
       return std::to_string(type);
   }
