@@ -11,12 +11,19 @@ std::string Node::gen(generator &g) {
 
 std::string BinaryNode::gen(generator &g) {
   bool float_ = false;
+  bool string_to_int_op = false;
   if(left->kind==ast_type::JUSTNODE) {
     auto n=static_cast<Node*>(left.get());
+    auto n_=static_cast<Node*>(right.get());
     if(n->tok.type == DOUBLE) float_ = true;
+    if(n_->tok.type == DOUBLE) float_ = true;
+    if(n->tok.type == STRING&&(is_it_int(n_->tok.type))) string_to_int_op = true;
+    if(n_->tok.type == STRING&&is_it_int(n->tok.type)) string_to_int_op = true;
   }
   if(float_ && op==MOD) {
     throw TranspileTimeError("Cannot do modulo for floats, use fmod from stdlib instead\n");
+  } else if(string_to_int_op) {
+    throw TranspileTimeError("Cannot add string to a integer\n");
   }
   return "(" + g.gencode(left) + op2string(op) + g.gencode(right) + ")";
 }

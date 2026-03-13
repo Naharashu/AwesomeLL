@@ -165,3 +165,15 @@ inline void removeSubstring(std::string& a, const std::string& b) {
     pos = a.find(b);
   }
 }
+
+inline bool is_it_int(token_type a) {
+  switch(a) {
+    case BYTE:
+    case WORD:
+    case INT:
+    case LONG:
+      return true;
+    default:
+      return false;
+  }
+}

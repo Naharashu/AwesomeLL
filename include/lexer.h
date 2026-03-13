@@ -81,11 +81,12 @@ using token_value = std::variant<nothing, long long, double, bool, std::string>;
 struct token {
     token_type type;
     token_value value;
+    token_type type_of_var;
 };
 
 class lexer {
 private:
-  token create_token(token_type a, token_value b);
+  token create_token(token_type a, token_value b, token_type c);
   bool is_int(char c);
   bool is_letter(char c);
 

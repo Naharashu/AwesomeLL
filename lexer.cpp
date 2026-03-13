@@ -7,7 +7,7 @@
 #include <string>
 #define u64 long long
 
-token lexer::create_token(token_type a, token_value b) { return token{a, b}; }
+token lexer::create_token(token_type a, token_value b, token_type c=EOF_) { return token{a, b, c}; }
 
 bool lexer::is_int(char c) { return c >= '0' && c <= '9'; }
 
@@ -192,29 +192,29 @@ std::vector<token> lexer::lex(std::string src) {
       else if (id == "false")
         lexed.push_back(create_token(FALSE, false));
       else if (id == "i8")
-        lexed.push_back(create_token(BYTE_TYPE, nothing{}));
+        lexed.push_back(create_token(BYTE_TYPE, nothing{}, BYTE_TYPE));
       else if (id == "u8")
-        lexed.push_back(create_token(UNSIGNED_8_TYPE, nothing{}));
+        lexed.push_back(create_token(UNSIGNED_8_TYPE, nothing{}, UNSIGNED_8_TYPE));
       else if (id == "i16")
-        lexed.push_back(create_token(WORD_TYPE, nothing{}));
+        lexed.push_back(create_token(WORD_TYPE, nothing{}, WORD_TYPE));
       else if (id == "u16")
-        lexed.push_back(create_token(UNSIGNED_16_TYPE, nothing{}));
+        lexed.push_back(create_token(UNSIGNED_16_TYPE, nothing{}, UNSIGNED_16_TYPE));
       else if (id == "i32")
-        lexed.push_back(create_token(INT_TYPE, nothing{}));
+        lexed.push_back(create_token(INT_TYPE, nothing{}, INT_TYPE));
       else if (id == "u32")
-        lexed.push_back(create_token(UNSIGNED_32_TYPE, nothing{}));
+        lexed.push_back(create_token(UNSIGNED_32_TYPE, nothing{}, UNSIGNED_32_TYPE));
       else if (id == "i64")
-        lexed.push_back(create_token(LONG_TYPE, nothing{}));
+        lexed.push_back(create_token(LONG_TYPE, nothing{}, LONG_TYPE));
       else if (id == "u64")
-        lexed.push_back(create_token(UNSIGNED_64_TYPE, nothing{}));
+        lexed.push_back(create_token(UNSIGNED_64_TYPE, nothing{}, UNSIGNED_64_TYPE));
       else if (id == "f32")
-        lexed.push_back(create_token(FLOAT_TYPE, nothing{}));
+        lexed.push_back(create_token(FLOAT_TYPE, nothing{}, FLOAT_TYPE));
       else if (id == "f64")
-        lexed.push_back(create_token(DOUBLE_TYPE, nothing{}));
+        lexed.push_back(create_token(DOUBLE_TYPE, nothing{}, DOUBLE_TYPE));
       else if (id == "string")
-        lexed.push_back(create_token(STRING_TYPE, nothing{}));
+        lexed.push_back(create_token(STRING_TYPE, nothing{}, STRING_TYPE));
       else if (id == "bool")
-        lexed.push_back(create_token(BOOL_TYPE, nothing{}));
+        lexed.push_back(create_token(BOOL_TYPE, nothing{}, BOOL_TYPE));
       else if (id == "null")
         lexed.push_back(create_token(NULL_, std::string{"NULL"}));
       else if (id == "void")
