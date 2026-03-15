@@ -52,22 +52,22 @@ class parser {
     astptr parse_and();
     astptr parse_or();
     astptr parse_break_continue();
-    astptr parse_array();
-    astptr parse_assignment();
+    astptr parse_array(bool is_const=false);
+    astptr parse_assignment(bool is_const=false);
     token consume() {
         if(indx >= src.size()) {
-            throw ParseTimeError("unexpected end of input\n");
+            throw ParseTimeError("\tUnexpected end of input\n");
         }
         return src[indx++];
     }
     token consume(token_type expected) {
         if(indx >= src.size()) {
-            throw ParseTimeError("unexpected end of input\n");
+            throw ParseTimeError("\tUnexpected end of input\n");
         }
         if(src[indx].type != expected) {
             line = src[indx].line;
             column = src[indx].column;
-            throw ParseTimeError("unexpected token " + disassemble_tok_type(src[indx].type) + " , " + "expected " + disassemble_tok_type(expected) + '\n');
+            throw ParseTimeError("\tUnexpected token " + disassemble_tok_type(src[indx].type) + " , " + "expected " + disassemble_tok_type(expected) + '\n');
         }
         return src[indx++];
     }

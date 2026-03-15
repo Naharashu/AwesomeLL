@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
   parser parser_(toks);
   u64 i = 0;
   if (lexer_output) {
-    for (auto x : toks) {
-      std::cout << '(' << i << ") " << disassemble_tok_type(x.type) << '\n';
+    for (auto &tok : toks) {
+      std::cout << '(' << i << ") " << disassemble_tok_type(tok.type) << '\n';
       i++;
     }
   }
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     std::cerr << "E: Cannot open temp file to generate cpp code\n";
     return 1;
   }
-  out.write(code_.c_str(), code_.size());
+  out.write(code_.c_str(), (long)code_.size());
   out.close();
   if (compile_into_bin) {
     std::string cleanup = "rm -f ";

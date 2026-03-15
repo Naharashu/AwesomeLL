@@ -1,41 +1,51 @@
 #include "include/table.h"
 #include "include/lexer.h"
 #include <ranges>
+#include <string>
 #include <utility>
 
-std::vector<std::unordered_map<std::string, std::pair<token_type, token_value>>> table;
+std::vector<std::unordered_map<std::string, symbol>> table;
 
 token_value search_value(const std::string &name) {
     for(auto &scope : std::ranges::reverse_view(table)) {
         if(scope.contains(name)) {
-            return scope.at(name).second;
+            return scope.at(name).value;
         }
     }
     return nothing{};
 }
 
+symbol search(const std::string &name) {
+    for(auto &scope : std::ranges::reverse_view(table)) {
+        if(scope.contains(name)) {
+            return scope.at(name);
+        }
+    }
+    return symbol{};
+}
+
 token_type search_type(const std::string &name) {
     for(auto &scope : std::ranges::reverse_view(table)) {
         if(scope.contains(name)) {
-            return scope.at(name).first;
+            return scope.at(name).type;
         }
     }
     return EOF_;
 }
 
 token_type search_type_scope(const std::string &name, unsigned int lvl) {
-    if(table.at(lvl).contains(name)) return table.at(table.size()-1).at(name).first;
+    if(table.at(lvl).contains(name)) return table.at(table.size()-1).at(name).type;
     return EOF_;
 }
 
-void insert(const std::string &name,token_type type, token_value val) {
+void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array) {
     if(table.empty()) return;
-    table[table.size()-1].insert_or_assign(name, std::make_pair(type, val));
+    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size});
 }
 
-void insert_top(const std::string &name,token_type type, token_value val) {
+void insert_top(const std::string &name,token_type type,token_value val, bool is_const, u64 size,bool is_array) {
     if(table.empty()) return;
-    table[0].insert_or_assign(name, std::make_pair(type, val));
+    table[0].insert_or_assign(name, symbol{type, std::move(val), is_const, size});
 }
 
 bool exist(const std::string &name) {

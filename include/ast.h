@@ -123,8 +123,9 @@ class AssignmentNode : public ASTNode {
 public:
   token id;
   astptr val;
-  AssignmentNode(const token &id_, astptr val_)
-      : id(id_), val(std::move(val_)) {
+  bool is_const;
+  AssignmentNode(const token &id_, astptr val_, bool isconst=false)
+      : id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::ASSIGN;
   };
 
@@ -136,8 +137,9 @@ public:
   token_type type_;
   token id;
   astptr val;
-  AssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_)
-      : type_(t_), id(id_), val(std::move(val_)) {
+  bool is_const;
+  AssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_, bool isconst=false)
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::DEFINEVAR;
   };
 
@@ -150,8 +152,9 @@ public:
   token_type type_;
   token id;
   astptr val;
-  ReAssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_)
-      : type_(t_), id(id_), val(std::move(val_)) {
+  bool is_const;
+  ReAssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_, bool isconst=false)
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::REASSIGNVAR;
   };
 

@@ -70,6 +70,7 @@ enum token_type : unsigned char {
     FUNC,
     USE,
     RETURN,
+    CONST,
     ID,
     NEWLINE,
     EOF_

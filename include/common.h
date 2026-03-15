@@ -15,7 +15,7 @@ inline std::string variant2string(const token_value &val) {
   return "error";
 }
 
-template <typename T> inline long long variant2int(token_value &val) {
+template <typename T> inline long long variant2int(const token_value &val) {
   return std::get<T>(val);
 }
 
@@ -34,13 +34,13 @@ template <typename T> bool fits(auto v) {
          v <= std::numeric_limits<T>::max();
 }
 
-inline bool is_it_value(token a) {
+inline bool is_it_value(const token &a) {
   if (a.type >= BYTE && a.type <= NULL_)
     return true;
   return false;
 }
 
-inline bool is_it_type(token a) {
+inline bool is_it_type(const token &a) {
   switch (a.type) {
   case BYTE_TYPE:
   case WORD_TYPE:
@@ -85,7 +85,7 @@ inline bool is_literal(token_type t) {
   }
 }
 
-inline std::string type_in_cpp(token a) {
+inline std::string type_in_cpp(const token &a) {
   std::string type;
   if (a.type == BYTE_TYPE)
     type = "int8_t ";

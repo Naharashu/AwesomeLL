@@ -232,6 +232,8 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(NULL_, std::string{"NULL"}, l, col));
       else if (id == "void")
         lexed.push_back(create_token(VOID_TYPE, nothing{}, l, col));
+      else if (id == "const")
+        lexed.push_back(create_token(CONST, nothing{}, l, col));
       else if (id == "auto")
         lexed.push_back(create_token(AUTO_TYPE, nothing{}, l, col));
       else if (id == "use")
@@ -405,6 +407,8 @@ std::string disassemble_tok_type(token_type type) {
       return "!=";
     case EQUAL:
       return "==";
+    case CONST:
+      return "const";
     case EOF_:
       return "EOF";
     default:
