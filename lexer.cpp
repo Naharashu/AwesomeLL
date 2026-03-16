@@ -238,6 +238,8 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(VOID_TYPE, nothing{}, l, col));
       else if (id == "const")
         lexed.push_back(create_token(CONST, nothing{}, l, col));
+      else if (id == "comptime")
+        lexed.push_back(create_token(COMPTIME, nothing{}, l, col));
       else if (id == "auto")
         lexed.push_back(create_token(AUTO_TYPE, nothing{}, l, col));
       else if (id == "use")

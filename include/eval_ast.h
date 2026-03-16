@@ -13,6 +13,9 @@ class eval_ast {
         switch (node->kind) {
             case ast_type::JUSTNODE: {
                 auto n = static_cast<Node*>(node.get());
+                if(n->tok.type==ID) {
+                    return variant2int<T>(search(variant2string(n->tok.value)).value);
+                }
                 return variant2int<T>(n->tok.value);
             }
             case ast_type::BINARY: {

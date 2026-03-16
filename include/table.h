@@ -11,6 +11,7 @@ using symbol = struct symbol {
     bool is_const=false;
     u64 size=0;
     bool is_array=false;
+    bool comptime=false;
 };
 
 extern std::vector<std::unordered_map<std::string, symbol>> table;
@@ -24,8 +25,8 @@ token_type search_type(const std::string &name);
 token_type search_type_scope(const std::string &name, unsigned int lvl);
 
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false);
-void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false);
+void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false);
+void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false);
 
 bool exist(const std::string &name);
 

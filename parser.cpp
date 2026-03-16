@@ -49,9 +49,15 @@ astptr parser::parse_factor() {
       }
     	consume();
       bool have_id = false;
+      std::vector<std::string> ids;
       for(size_t i=0;i<src.size();i++) {
         if(peek(i).type == EQ || peek(i).type == R_SQ_BRACKET) break;
-        if(peek(i).type == ID) have_id = true;
+        if(peek(i).type == ID&&!have_id) {
+          ids.push_back(variant2string(peek(i).value));
+          for(auto &x : ids) {
+            if(!search(x).comptime) have_id = true;
+          }
+        }
       }
     	astptr i=parse_expr();
       if(!have_id) {
@@ -450,16 +456,9 @@ astptr parser::parse_array(bool is_const) {
   std::string id = variant2string(consume(ID).value);
   if (peek().type == SEMI) {
     token semi = consume(SEMI);
-    if (size_defined) {
-      insert(id, type.type, nothing{}, is_const, variant2int<i64>(size.value), true);
-      return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id,
-                                         variant2int<i64>(size.value));
-      }
-    else {
-      parser::line = semi.line;
-      parser::column = semi.column;
-      throw ParseTimeError("\tDeclaring array '" + id + "' without size and initializing values\n");
-    }  
+    parser::line = semi.line;
+    parser::column = semi.column;
+    throw ParseTimeError("\tDeclaring array '" + id + "' without initializing values\n");
   }
   consume(EQ);
   consume(L_SQ_BRACKET);
@@ -482,7 +481,35 @@ astptr parser::parse_array(bool is_const) {
     return std::make_unique<ArrayNode>(type, std::move(values), id, els);
 }
 
-astptr parser::parse_assignment(bool is_const) {
+void parser::parse_comptime() {
+  consume(COMPTIME);
+  token type = consume();
+  if(!is_it_type(type)) {
+    parser::line = type.line;
+    parser::column = type.column;
+    throw ParseTimeError("\tUnexpected type " + std::to_string(type.type) + '\n');
+  }
+  std::string id = variant2string(consume(ID).value);
+  consume(EQ);
+  u64 i=0;
+  while(i<src.size()) {
+    if(peek(i).type == ID) {
+      parser::line = peek(i).line;
+      parser::column = peek(i).column;
+      throw ParseTimeError("\tValue cannot be evaluated in compile time\n");
+    }
+    if(peek(i).type == SEMI) break;
+    i++;
+  }
+  astptr val_ = parse_expr();
+  eval_ast e;
+  i64 val = e.eval<i64>(val_);
+  insert(id, type.type, val, false, false, true);
+  consume(SEMI);
+  return;
+}
+
+astptr parser::parse_assignment(bool is_const, bool comptime) {
   if(is_const) consume(CONST);
   if (peek().type == ID && (peek(1).type == L_BRACKET||peek(1).type==L_SQ_BRACKET)) {
     astptr node = parse_factor();
@@ -557,6 +584,10 @@ astptr parser::parse_assignment(bool is_const) {
     parser::line = id.line;
     parser::column = id.column;
     throw ParseTimeError("\tVariable '" + id_value + "' is constant'\n");
+  } else if(search(id_value).comptime) {
+    parser::line = id.line;
+    parser::column = id.column;
+    throw ParseTimeError("\tVariable '" + id_value + "' is compile time value'\n");
   }
   if (peek().type == SEMI) {
     consume();
@@ -564,7 +595,7 @@ astptr parser::parse_assignment(bool is_const) {
   }
   consume(token_type::EQ);
   astptr value = parse_or();
-  insert(variant2string(id.value), type.type, nothing{}, is_const);
+  insert(variant2string(id.value), type.type, nothing{}, is_const, false, comptime);
   consume(SEMI);
   return std::make_unique<AssignmentNodeExpr>(type.type, id, std::move(value), is_const);
 }
@@ -591,6 +622,9 @@ astptr parser::parse_statement() {
     return parse_break_continue();
   case token_type::CONST:
     return parse_assignment(true);
+  case token_type::COMPTIME:
+    parse_comptime();
+    return astptr{};
   case token_type::BYTE_TYPE:
   case token_type::WORD_TYPE:
   case token_type::INT_TYPE:

@@ -56,7 +56,8 @@ class parser {
     astptr parse_or();
     astptr parse_break_continue();
     astptr parse_array(bool is_const=false);
-    astptr parse_assignment(bool is_const=false);
+    void parse_comptime();
+    astptr parse_assignment(bool is_const=false, bool comptime=false);
     token consume() {
         if(indx >= src.size()) {
             throw ParseTimeError("\tUnexpected end of input\n");

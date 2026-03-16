@@ -71,6 +71,7 @@ enum token_type : unsigned char {
     USE,
     RETURN,
     CONST,
+    COMPTIME,
     ID,
     NEWLINE,
     EOF_
