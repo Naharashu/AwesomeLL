@@ -34,7 +34,7 @@ token_type search_type(const std::string &name) {
 }
 
 token_type search_type_scope(const std::string &name, unsigned int lvl) {
-    if(table.at(lvl).contains(name)) return table.at(table.size()-1).at(name).type;
+    if(table.at(lvl).contains(name)) return table.at(lvl).at(name).type;
     return EOF_;
 }
 
@@ -49,7 +49,7 @@ void insert_top(const std::string &name,token_type type,token_value val, bool is
 }
 
 bool exist(const std::string &name) {
-    if(search_type(name)==EOF_) return false;
+    if(search(name).type==EOF_) return false;
     return true;
 }
 

@@ -10,7 +10,11 @@ std::string Node::gen(generator &g)
     (void)g;
     if(tok.type==ID) {
         symbol var = search(variant2string(tok.value));
-        if(var.comptime) return std::to_string(variant2int<long long>(var.value));
+        if(var.comptime&&(var.type<=LONG_TYPE||var.type==BOOL_TYPE)) return std::to_string(variant2int<long long>(var.value));
+        if(var.comptime&&(var.type<=UNSIGNED_64_TYPE&&var.type>LONG_TYPE)) return std::to_string(variant2int<unsigned long long>(var.value));
+        if(var.comptime&&var.type==STRING_TYPE) return variant2string(var.value);
+        if(var.comptime&&(var.type==FLOAT_TYPE)) return std::to_string(variant2float(var.value));
+        if(var.comptime&&(var.type==DOUBLE_TYPE)) return std::to_string(variant2double(var.value));
     }
     return variant2value(tok);
 }

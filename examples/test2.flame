@@ -1,16 +1,14 @@
+use stdlib;
 
 func add(i32 a, i32 b) i32 {
     return a+b;
 }
 
-func add_array(i32[] a) void {
-    a[0] = a[0] + a[1];
-    return;
-}
-
 func main() i32 {
-    i32[3] a = [1,2,3];
-    comptime string i = 3;
-    print(add_array());
+    comptime f64 a = 3.14;
+    comptime u64 b = 2;
+    print(fmod(a, b));
+    comptime string str = "Hi ^^";
+    print(str);
     return 0;
 }

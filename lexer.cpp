@@ -298,7 +298,7 @@ std::vector<token> lexer::lex(std::string src) {
         if(fits<float>(val_)) lexed.push_back(create_token(FLOAT, (float)val_ ,l, col));
         else lexed.push_back(create_token(DOUBLE, val_ ,l, col));
       } else {
-        auto val_ = strtoll(number.c_str(), &endptr, 10);
+        auto val_ = strtoull(number.c_str(), &endptr, 10);
         token_type type = INT;
         if (fits<int8_t>(val_))
           type = BYTE;
@@ -306,6 +306,8 @@ std::vector<token> lexer::lex(std::string src) {
           type = WORD;
         else if (fits<int32_t>(val_))
           type = INT;
+        else if (fits<uint64_t>(val_))
+          type = UNSIGNED;
         else
           type = LONG;
         lexed.push_back(create_token(type, static_cast<token_value>(val_),l, col));
@@ -365,6 +367,7 @@ std::string disassemble_tok_type(token_type type) {
     case WORD:
     case INT:
     case LONG:
+    case UNSIGNED:
       return "number";
     case FLOAT:
     case DOUBLE:
@@ -399,6 +402,8 @@ std::string disassemble_tok_type(token_type type) {
       return "/";
     case MOD:
       return "%";
+    case EQ:
+      return "=";
     case AND:
       return "and";
     case OR:

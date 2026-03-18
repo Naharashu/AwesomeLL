@@ -19,11 +19,11 @@ template <typename T> inline long long variant2int(const token_value &val) {
   return std::get<T>(val);
 }
 
-inline double variant2float(token_value &val) {
+inline double variant2float(const token_value &val) {
   return std::get<float>(val);
 }
 
-inline double variant2double(token_value &val) {
+inline double variant2double(const token_value &val) {
   return std::get<double>(val);
 }
 
@@ -153,6 +153,8 @@ inline std::string variant2value(token tok) {
     return std::to_string((int)variant2int<long long>(tok.value));
   if (tok.type == LONG)
     return std::to_string(variant2int<long long>(tok.value));
+  if (tok.type == UNSIGNED)
+    return std::to_string(variant2int<unsigned long long>(tok.value));
   if (tok.type == FLOAT)
     return std::to_string(variant2float(tok.value));
   if (tok.type == DOUBLE)

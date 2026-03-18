@@ -17,7 +17,7 @@ astptr parser::parse_factor()
 {
     token tok = consume();
     if (tok.type == token_type::BYTE || tok.type == token_type::WORD || tok.type == token_type::INT ||
-        tok.type == token_type::LONG || tok.type == token_type::NULL_ || tok.type == token_type::FLOAT ||
+        tok.type == token_type::LONG || tok.type == token_type::UNSIGNED || tok.type == token_type::NULL_ || tok.type == token_type::FLOAT ||
         tok.type == token_type::DOUBLE || tok.type == token_type::TRUE || tok.type == token_type::FALSE ||
         tok.type == token_type::VOID_TYPE || tok.type == token_type::STRING)
     {
@@ -138,7 +138,27 @@ astptr parser::parse_factor()
         if (search(variant2string(tok.value)).comptime)
         {
             symbol var = search(variant2string(tok.value));
-            return std::make_unique<Node>(token{.type=LONG, .value=var.value, .line=tok.line, .column=tok.column});
+            switch (var.type)
+            {
+            case BYTE_TYPE ... LONG_TYPE:
+                return std::make_unique<Node>(
+                    token{.type = LONG, .value = var.value, .line = tok.line, .column = tok.column});
+            case UNSIGNED_8_TYPE ... UNSIGNED_64_TYPE:
+                return std::make_unique<Node>(
+                    token{.type = UNSIGNED, .value = var.value, .line = tok.line, .column = tok.column});
+            case FLOAT_TYPE:
+                return std::make_unique<Node>(
+                    token{.type = FLOAT, .value = var.value, .line = tok.line, .column = tok.column});
+            case DOUBLE_TYPE:
+                return std::make_unique<Node>(
+                    token{.type = DOUBLE, .value = var.value, .line = tok.line, .column = tok.column});
+            case STRING_TYPE:
+                return std::make_unique<Node>(
+                    token{.type = STRING, .value = var.value, .line = tok.line, .column = tok.column});
+            default:
+                return std::make_unique<Node>(
+                    token{.type = LONG, .value = var.value, .line = tok.line, .column = tok.column});
+            }
         }
         return std::make_unique<Node>(tok);
     }
@@ -279,7 +299,13 @@ astptr parser::parse_use()
         std::vector<astptr> module;
         try
         {
-            module = p.parse();
+            insert("print", FUNC, nothing{});
+            insert("input", FUNC, nothing{});
+            insert("sizeof", FUNC, nothing{});
+            while (p.peek().type != token_type::EOF_)
+            {
+                module.push_back(p.parse_statement());
+            }
         }
         catch (ParseTimeError &e)
         {
@@ -303,7 +329,14 @@ astptr parser::parse_use()
     lexer l;
     std::vector<token> toks = l.lex(code);
     parser p(toks);
-    std::vector<astptr> module = p.parse();
+    std::vector<astptr> module;
+    insert("print", FUNC, nothing{});
+    insert("input", FUNC, nothing{});
+    insert("sizeof", FUNC, nothing{});
+    while (p.peek().type != token_type::EOF_)
+    {
+        module.push_back(p.parse_statement());
+    }
     return std::make_unique<ModuleNode>(std::move(module));
 }
 
@@ -402,10 +435,11 @@ astptr parser::parse_func_statement()
     {
         token type = consume();
         bool is_array = false;
-        if(peek().type==L_SQ_BRACKET) {
-          consume(L_SQ_BRACKET);
-          consume(R_SQ_BRACKET);
-          is_array=true;
+        if (peek().type == L_SQ_BRACKET)
+        {
+            consume(L_SQ_BRACKET);
+            consume(R_SQ_BRACKET);
+            is_array = true;
         }
         token arg_id = consume(ID);
         if (!is_it_type(type))
@@ -594,8 +628,26 @@ void parser::parse_comptime()
     }
     astptr val_ = parse_expr();
     eval_ast e;
-    i64 val = e.eval<i64>(val_);
-    insert(id, type.type, val, false, false, false, true);
+    if (type.type <= LONG_TYPE || type.type == BOOL_TYPE)
+    {
+        i64 val = e.eval<i64>(val_);
+        insert(id, type.type, val, false, false, false, true);
+    }
+    else if (type.type > LONG_TYPE && type.type <= UNSIGNED_64_TYPE)
+    {
+        u64 val = e.eval<u64>(val_);
+        insert(id, type.type, val, false, false, false, true);
+    }
+    else if (type.type == STRING_TYPE)
+    {
+        std::string val = e.eval_string(val_);
+        insert(id, type.type, val, false, false, false, true);
+    }
+    else if (type.type == DOUBLE_TYPE || type.type == FLOAT_TYPE)
+    {
+        auto val = e.eval_double(val_);
+        insert(id, type.type, val, false, false, false, true);
+    }
     consume(SEMI);
     return;
 }

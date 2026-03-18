@@ -6,7 +6,7 @@
 #include "lexer.h"
 
 using symbol = struct symbol {
-    token_type type;
+    token_type type=EOF_;
     token_value value;
     bool is_const=false;
     u64 size=0;

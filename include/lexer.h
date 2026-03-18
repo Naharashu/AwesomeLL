@@ -24,6 +24,7 @@ enum token_type : unsigned char {
     WORD,
     INT,
     LONG,
+    UNSIGNED,
     FLOAT,
     DOUBLE,
     STRING,
