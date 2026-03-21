@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <string>
 
-token lexer::create_token(const token_type &a,const token_value &b,const u64 &line,const u64 &column) { return token{a, b, line, column}; }
+token lexer::create_token(const token_type &a,const token_value &b,const u64 &line,const u64 &column, const std::string &str) { return token{a, b, line, column, .str_value=str}; }
 
 bool lexer::is_int(char c) { return c >= '0' && c <= '9'; }
 
@@ -246,8 +246,12 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(USE, nothing{}, l, col));
       else if (id == "return")
         lexed.push_back(create_token(RETURN, nothing{}, l, col));
+      else if (id == "vec")
+        lexed.push_back(create_token(VEC, nothing{}, l, col));
+      else if (id == "struct")
+        lexed.push_back(create_token(STRUCT, nothing{}, l, col));
       else
-        lexed.push_back(create_token(ID, id, l,col));
+        lexed.push_back(create_token(ID, id, l,col, id));
 
       continue;
     }

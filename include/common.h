@@ -24,7 +24,19 @@ inline double variant2float(const token_value &val) {
 }
 
 inline double variant2double(const token_value &val) {
-  return std::get<double>(val);
+  if(auto* res = std::get_if<double>(&val)) {
+    return *res;
+  } else if(auto* res = std::get_if<float>(&val)) {
+    return static_cast<double>(*res);
+  } else if(auto* res = std::get_if<i64>(&val)) {
+    return static_cast<double>(*res);
+  } else if(auto* res = std::get_if<u64>(&val)) {
+    return static_cast<double>(*res);
+  } else if(auto* res = std::get_if<bool>(&val)) {
+    return *res ? 1.0 : 0.0;
+  } else {
+    return 0.0;
+  }
 }
 
 inline bool variant2bool(token_value &val) { return std::get<bool>(val); }
@@ -143,6 +155,7 @@ inline std::string op2string(token_type a) {
     op = " & ";
   return op;
 }
+
 
 inline std::string variant2value(token tok) {
   if (tok.type == BYTE)

@@ -25,10 +25,10 @@ astptr parser::parse_factor()
     }
     else if (tok.type == token_type::ID)
     {
-        std::string id = variant2string(tok.value);
+        std::string id = variant2string(tok.str_value);
         if (peek().type == L_BRACKET)
         {
-            if (!exist(variant2string(tok.value)))
+            if (!exist(variant2string(tok.str_value)))
             {
                 parser::line = tok.line;
                 parser::column = tok.column;
@@ -47,7 +47,7 @@ astptr parser::parse_factor()
         }
         if (peek().type == L_SQ_BRACKET)
         {
-            if (!exist(variant2string(tok.value)))
+            if (!exist(variant2string(tok.str_value)))
             {
                 parser::line = tok.line;
                 parser::column = tok.column;
@@ -62,7 +62,7 @@ astptr parser::parse_factor()
                     break;
                 if (peek(i).type == ID && !have_id)
                 {
-                    ids.push_back(variant2string(peek(i).value));
+                    ids.push_back(variant2string(peek(i).str_value));
                     for (auto &x : ids)
                     {
                         if (!search(x).comptime)
@@ -129,15 +129,15 @@ astptr parser::parse_factor()
             astptr value = parse_expr();
             return std::make_unique<ArrayChangeNode>(tok, std::move(i), std::move(value));
         }
-        if (!exist(variant2string(tok.value)))
+        if (!exist(variant2string(tok.str_value)))
         {
             parser::line = tok.line;
             parser::column = tok.column;
-            throw ParseTimeError("\tUse undeclared variable '" + variant2string(tok.value) + "'\n");
+            throw ParseTimeError("\tUse undeclared variable '" + variant2string(tok.str_value) + "'\n");
         }
-        if (search(variant2string(tok.value)).comptime)
+        if (search(variant2string(tok.str_value)).comptime)
         {
-            symbol var = search(variant2string(tok.value));
+            symbol var = search(variant2string(tok.str_value));
             switch (var.type)
             {
             case BYTE_TYPE ... LONG_TYPE:
@@ -282,7 +282,7 @@ astptr parser::parse_expr()
 astptr parser::parse_use()
 {
     token m = consume(USE);
-    std::string name = variant2string(consume(ID).value) + "." + "flame";
+    std::string name = variant2string(consume(ID).str_value) + "." + "flame";
     consume(SEMI);
     std::ifstream file(name);
     std::ostringstream oss;
@@ -446,10 +446,10 @@ astptr parser::parse_func_statement()
         {
             parser::line = type.line;
             parser::column = type.column;
-            throw ParseTimeError("\tUnknown type of argument '" + variant2string(arg_id.value) +
+            throw ParseTimeError("\tUnknown type of argument '" + variant2string(arg_id.str_value) +
                                  "', expected i8..i64, u8..u64, bool, string, f32, f64, auto or Type[]\n");
         }
-        insert(variant2string(arg_id.value), type.type, nothing{});
+        insert(variant2string(arg_id.str_value), type.type, nothing{});
         astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array);
         args_.push_back(std::move(argument));
         if (peek().type == COMA)
@@ -461,12 +461,12 @@ astptr parser::parse_func_statement()
     {
         parser::line = return_type.line;
         parser::column = return_type.column;
-        throw ParseTimeError("\tUnknown return type in " + variant2string(id.value) +
+        throw ParseTimeError("\tUnknown return type in " + id.str_value +
                              ", expected i8..64, u8..64, bool, string, void, f32, f64, auto\n");
     }
-    astptr block = parse_block(variant2string(id.value));
+    astptr block = parse_block(id.str_value);
     table.pop_back();
-    insert(variant2string(id.value), FUNC, nothing{});
+    insert(id.str_value, FUNC, nothing{});
     return std::make_unique<FuncNode>(id, return_type, std::move(args_), std::move(block));
 }
 
@@ -572,7 +572,7 @@ astptr parser::parse_array(bool is_const)
         size_defined = true;
     }
     consume(R_SQ_BRACKET);
-    std::string id = variant2string(consume(ID).value);
+    std::string id = variant2string(consume(ID).str_value);
     if (peek().type == SEMI)
     {
         token semi = consume(SEMI);
@@ -596,7 +596,7 @@ astptr parser::parse_array(bool is_const)
     consume(SEMI);
     insert(id, type.type, nothing{}, is_const, els, true);
     if (size_defined)
-        return std::make_unique<ArrayNode>(type, std::move(values), id, variant2int<long long>(size.value));
+        return std::make_unique<ArrayNode>(type, std::move(values), id, variant2int<long long>(size.str_value));
     else
         return std::make_unique<ArrayNode>(type, std::move(values), id, els);
 }
@@ -611,12 +611,12 @@ void parser::parse_comptime()
         parser::column = type.column;
         throw ParseTimeError("\tUnexpected type " + std::to_string(type.type) + '\n');
     }
-    std::string id = variant2string(consume(ID).value);
+    std::string id = variant2string(consume(ID).str_value);
     consume(EQ);
     u64 i = 0;
     while (i < src.size())
     {
-        if (peek(i).type == ID)
+        if (peek(i).type == ID && !search(peek(i).str_value).comptime)
         {
             parser::line = peek(i).line;
             parser::column = peek(i).column;
@@ -668,11 +668,11 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
         token id = consume(ID);
         token a = consume();
         consume();
-        if (!exist(variant2string(id.value)))
+        if (!exist(id.str_value))
         {
             parser::line = id.line;
             parser::column = id.column;
-            throw ParseTimeError("\tUse undeclared variable '" + variant2string(id.value) + "'\n");
+            throw ParseTimeError("\tUse undeclared variable '" + id.str_value + "'\n");
         }
         if (a.type == PLUS)
             return std::make_unique<IncDecVarNode>(0, id.value);
@@ -688,11 +688,11 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
             peek().type == MOD)
         {
             token_type op = consume().type;
-            if (!exist(variant2string(type.value)))
+            if (!exist(variant2string(type.str_value)))
             {
                 parser::line = type.line;
                 parser::column = type.column;
-                throw ParseTimeError("\tUse undeclared variable '" + variant2string(type.value) + "'\n");
+                throw ParseTimeError("\tUse undeclared variable '" + variant2string(type.str_value) + "'\n");
             }
             consume(EQ);
             astptr value = parse_or();
@@ -700,17 +700,17 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
                 consume(SEMI);
             return std::make_unique<ReAssignmentNodeExpr>(op, type, std::move(value), is_const);
         }
-        if (!exist(variant2string(type.value)))
+        if (!exist(variant2string(type.str_value)))
         {
             parser::line = type.line;
             parser::column = type.column;
-            throw ParseTimeError("\tUse undeclared variable '" + variant2string(type.value) + "'\n");
+            throw ParseTimeError("\tUse undeclared variable '" + variant2string(type.str_value) + "'\n");
         }
-        if (search(variant2string(type.value)).is_const || is_const)
+        if (search(variant2string(type.str_value)).is_const || is_const)
         {
             parser::line = type.line;
             parser::column = type.column;
-            throw ParseTimeError("\tVariable '" + variant2string(type.value) + "' is constant'\n");
+            throw ParseTimeError("\tVariable '" + variant2string(type.str_value) + "' is constant'\n");
         }
         consume(EQ);
         astptr value = parse_or();
@@ -724,18 +724,18 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
         throw ParseTimeError("\tUnexpected type " + std::to_string(type.type) + '\n');
     }
     token id = consume(token_type::ID);
-    std::string id_value = variant2string(id.value);
+    std::string id_value = id.str_value;
     if (exist_in_scope(id_value, table.size() - 1) && !exist_in_scope(id_value, 0))
     {
         parser::line = id.line;
         parser::column = id.column;
-        throw ParseTimeError("\tRedefinition of '" + variant2string(id.value) + "'\n");
+        throw ParseTimeError("\tRedefinition of '" + id.str_value + "'\n");
     }
     else if (search_type(id_value) == FUNC)
     {
         parser::line = id.line;
         parser::column = id.column;
-        throw ParseTimeError("\tRedefinition function '" + variant2string(id.value) + "' as variable\n");
+        throw ParseTimeError("\tRedefinition function '" + id.str_value + "' as variable\n");
     }
     else if (search(id_value).is_const)
     {
@@ -756,7 +756,7 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
     }
     consume(token_type::EQ);
     astptr value = parse_or();
-    insert(variant2string(id.value), type.type, nothing{}, is_const, false, comptime);
+    insert(id.str_value, type.type, nothing{}, is_const, false, comptime);
     consume(SEMI);
     return std::make_unique<AssignmentNodeExpr>(type.type, id, std::move(value), is_const);
 }

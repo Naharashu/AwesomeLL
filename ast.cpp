@@ -73,10 +73,10 @@ std::string AssignmentNode::gen(generator &g)
   if(is_const) {
     g.line = id.line;
     g.column = id.column;
-    throw TranspileTimeError("Variable '" + variant2string(id.value) + "' is constant\n");
+    throw TranspileTimeError("Variable '" + id.str_value + "' is constant\n");
   }
     std::string value = val ? g.gencode(val) : "";
-    return " " + variant2string(id.value) + (value.empty() ? "" : "=" + value);
+    return " " + id.str_value + (value.empty() ? "" : "=" + value);
 }
 
 std::string AssignmentNodeExpr::gen(generator &g)
@@ -113,7 +113,7 @@ std::string AssignmentNodeExpr::gen(generator &g)
         type += "uint64_t ";
     if (type_ == AUTO_TYPE)
         type += "auto ";
-    return type + variant2string(id.value) + (val ? "=" + g.gencode(val) : "=" + nullval);
+    return type + id.str_value + (val ? "=" + g.gencode(val) : "=" + nullval);
 }
 
 std::string UnaryNode::gen(generator &g)
@@ -128,7 +128,7 @@ std::string UnaryNode::gen(generator &g)
 std::string FuncCallNode::gen(generator &g)
 {
     std::string args_;
-    std::string name = variant2string(id.value);
+    std::string name = id.str_value;
     if (name == "print")
     {
         args_ = "std::cout << ";
@@ -160,7 +160,7 @@ std::string FuncCallNode::gen(generator &g)
         if (i + 1 < args.size())
             args_ += ", ";
     }
-    return variant2string(id.value) + '(' + args_ + ')';
+    return id.str_value + '(' + args_ + ')';
 }
 
 std::string CondNode::gen(generator &g)
@@ -205,7 +205,7 @@ std::string FuncNode::gen(generator &g)
 {
     std::ostringstream code;
     code << type_in_cpp(type);
-    code << variant2string(id.value);
+    code << id.str_value;
     code << '(';
     for (u64 i = 0; i < args.size(); i++)
     {
@@ -224,8 +224,8 @@ std::string ArgumentNode::gen(generator &g)
 {
     (void)g;
     std::string type_ = type_in_cpp(type);
-    if(is_array) return type_ +  variant2string(id.value) + "[]";
-    return type_ + variant2string(id.value);
+    if(is_array) return type_ +  id.str_value + "[]";
+    return type_ + id.str_value;
 }
 
 std::string ReturnNode::gen(generator &g)
@@ -339,7 +339,7 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
     default:
         break;
     }
-    return variant2string(id.value) + op + g.gencode(val);
+    return id.str_value + op + g.gencode(val);
 }
 
 std::string ArrayNode::gen(generator &g)
@@ -370,12 +370,12 @@ std::string ArrayNode::gen(generator &g)
 
 std::string ArrayAccessNode::gen(generator &g)
 {
-    return variant2string(id.value) + "[" + g.gencode(index) + "]";
+    return id.str_value + "[" + g.gencode(index) + "]";
 }
 
 std::string ArrayChangeNode::gen(generator &g)
 {
-    return variant2string(id.value) + "[" + g.gencode(index) + "] = " + g.gencode(value);
+    return id.str_value + "[" + g.gencode(index) + "] = " + g.gencode(value);
 }
 
 std::string ModuleNode::gen(generator &g)

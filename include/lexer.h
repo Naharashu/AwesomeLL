@@ -73,6 +73,8 @@ enum token_type : unsigned char {
     RETURN,
     CONST,
     COMPTIME,
+    STRUCT,
+    VEC,
     ID,
     NEWLINE,
     EOF_
@@ -86,11 +88,12 @@ struct token {
     token_value value;
     unsigned long long line;
     unsigned long long column;
+    std::string str_value;
 };
 
 class lexer {
 private:
-  token create_token(const token_type &a,const token_value &b,const unsigned long long &line,const unsigned long long &c);
+  token create_token(const token_type &a,const token_value &b,const unsigned long long &line,const unsigned long long &c, const std::string &str="");
   bool is_int(char c);
   bool is_letter(char c);
   unsigned long long l;
