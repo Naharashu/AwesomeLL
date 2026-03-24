@@ -57,6 +57,7 @@ class eval_ast {
             default:
                 return 0;
         }
+        return 0;
     }
     template<typename T>
     T eval(const astptr &node) {

@@ -304,11 +304,11 @@ std::vector<token> lexer::lex(std::string src) {
       } else {
         auto val_ = strtoull(number.c_str(), &endptr, 10);
         token_type type = INT;
-        if (fits<int8_t>(val_))
+        if (fits<uint8_t>(val_))
           type = BYTE;
-        else if (fits<int16_t>(val_))
+        else if (fits<uint16_t>(val_))
           type = WORD;
-        else if (fits<int32_t>(val_))
+        else if (fits<uint32_t>(val_))
           type = INT;
         else if (fits<uint64_t>(val_))
           type = UNSIGNED;

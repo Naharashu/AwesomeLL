@@ -204,7 +204,10 @@ std::string BlockNode::gen(generator &g)
 std::string FuncNode::gen(generator &g)
 {
     std::ostringstream code;
-    code << type_in_cpp(type);
+    if(is_return_type_array) {
+        code << "std::array<" << type_in_cpp(type) << ',' << std::to_string(size) << ">";
+    }
+    else code << type_in_cpp(type);
     code << id.str_value;
     code << '(';
     for (u64 i = 0; i < args.size(); i++)
@@ -346,6 +349,9 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
 std::string ArrayNode::gen(generator &g)
 {
     std::string type_ = type_in_cpp(type);
+    if(is_init) {
+        return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + g.gencode(values.at(0));
+    }
     std::string values_ = "{";
     if (!values.empty())
     {
@@ -361,7 +367,6 @@ std::string ArrayNode::gen(generator &g)
     {
         values_ = "";
     }
-
     if(!values.empty()) {
         return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + values_;
     }

@@ -72,6 +72,8 @@ inline bool is_it_type(const token &a) {
   case UNSIGNED_16_TYPE:
   case UNSIGNED_32_TYPE:
   case UNSIGNED_64_TYPE:
+  case STRUCT:
+  case VEC:
   case AUTO_TYPE:
     return true;
   default:
@@ -92,6 +94,7 @@ inline bool is_literal(token_type t) {
   case WORD:
   case INT:
   case LONG:
+  case UNSIGNED:
   case FLOAT:
   case DOUBLE:
   case TRUE:
@@ -134,6 +137,10 @@ inline std::string type_in_cpp(const token &a) {
     type = "void ";
   if (a.type == AUTO_TYPE)
     type = "auto ";
+  if (a.type == VEC)
+    type = "std::vector<";
+  if (a.type == STRUCT)
+    type = "struct ";
   return type;
 }
 
@@ -165,11 +172,11 @@ inline std::string op2string(token_type a) {
 
 inline std::string variant2value(token tok) {
   if (tok.type == BYTE)
-    return std::to_string((char)variant2int<long long>(tok.value));
+    return std::to_string((unsigned char)variant2int<unsigned long long>(tok.value));
   if (tok.type == WORD)
-    return std::to_string((short)variant2int<long long>(tok.value));
+    return std::to_string((unsigned short)variant2int<unsigned long long>(tok.value));
   if (tok.type == INT)
-    return std::to_string((int)variant2int<long long>(tok.value));
+    return std::to_string((unsigned int)variant2int<unsigned long long>(tok.value));
   if (tok.type == LONG)
     return std::to_string(variant2int<long long>(tok.value));
   if (tok.type == UNSIGNED)
@@ -203,6 +210,7 @@ inline bool is_it_int(token_type a) {
     case WORD:
     case INT:
     case LONG:
+    case UNSIGNED:
       return true;
     default:
       return false;

@@ -8,14 +8,20 @@ func add_(i32[3] a) i32 {
     return a[0]+a[1];
 }
 
+func array_() i32[3] {
+    i32[3] a = [1,2,3];
+    return a;
+}
+
 func main() i32 {
     comptime f64 a = 3;
     comptime f64 b = a + 0.14;
     comptime u64 c = 2;
     //i32[3] i=[1,2,3];
-    i32[3] i=[1,2,3];
+    i32[3] i=array_();
     i32[2] j=[1,2];
-    print(add_(j));
+    i32 f = -3;
+    print(add_(i)+f);
     comptime string str = "Hi ^^";
     print(str);
     return 0;

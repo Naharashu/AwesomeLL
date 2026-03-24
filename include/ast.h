@@ -8,7 +8,7 @@
 class ASTNode;
 class generator;
 
-using ast_type = enum class ast_type {
+using ast_type = enum class ast_type : uint8_t {
   JUSTNODE,
   BINARY,
   DEFINEVAR,
@@ -208,9 +208,11 @@ public:
   token type;
   std::vector<astptr> args;
   astptr block;
-  FuncNode(const token id_, const token type_, std::vector<astptr> args_,
-           astptr block_)
-      : id(id_), type(type_), args(std::move(args_)), block(std::move(block_)) {
+  bool is_return_type_array=false;
+  u64 size;
+  FuncNode(const token &id_, const token &type_, std::vector<astptr> args_,
+           astptr block_,const bool &irta, const u64 &s)
+      : id(id_), type(type_), args(std::move(args_)), block(std::move(block_)), is_return_type_array(irta), size(s) {
     kind = ast_type::FUNC;
   };
 
@@ -282,9 +284,10 @@ public:
   token type;
   std::vector<astptr> values;
   std::string id;
-  long size;
-  ArrayNode(const token &t, std::vector<astptr> v, const std::string &i, long s)
-      : type(t), values(std::move(v)), id(i), size(s) {
+  unsigned long long size;
+  bool is_init=false;
+  ArrayNode(const token &t, std::vector<astptr> v, const std::string &i,unsigned long long s, bool ii=false)
+      : type(t), values(std::move(v)), id(i), size(s), is_init(ii) {
     kind = ast_type::ARRAY;
   }
   std::string gen(generator &g) override;

@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   }
   file.close();
   std::vector<token> toks = lex.lex(code);
-  parser parser_(toks);
+  parser parser_(toks, filename);
   u64 i = 0;
   if (lexer_output) {
     for (auto &tok : toks) {
@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\x1b[0;35m" << filename << ':' << parser_.line << ':' << parser_.column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
     return 1;
   }
+  if(parser_.errors) return 1;
   generator gen;
   std::string code_;
   try {

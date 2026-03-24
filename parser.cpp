@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <utility>
 #include <vector>
 
@@ -48,12 +49,18 @@ astptr parser::parse_factor()
                         parser::column = c.column;
                         throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " + std::to_string(arg_i) + "\n");
                     }
+                    if(search(c.str_value).type != f->args[arg_i].type&&f->type!=FUNC) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected argument of type '" + disassemble_tok_type(f->args[arg_i].type) + "', but got '" + disassemble_tok_type(search_type(c.str_value)) + "'\n");
+                    }
                     if(search(c.str_value).is_array&&search(c.str_value).size!=f->args[arg_i].size) {
                         parser::line = c.line;
                         parser::column = c.column;
-                        throw ParseTimeError("\tExpected array of size '" + std::to_string(f->args[arg_i++].size) + "'\n");
+                        throw ParseTimeError("\tExpected array of size '" + std::to_string(f->args[arg_i].size) + "'\n");
                     }
                 }
+                arg_i++;
                 args_.push_back(parse_or());
                 if (peek().type == COMA)
                     consume();
@@ -311,7 +318,7 @@ astptr parser::parse_use()
         file.close();
         lexer l;
         std::vector<token> toks = l.lex(code);
-        parser p(toks);
+        parser p(toks, name);
         std::vector<astptr> module;
         try
         {
@@ -325,7 +332,7 @@ astptr parser::parse_use()
         }
         catch (ParseTimeError &e)
         {
-            std::cout << "\x1b[0;35m" << name << ':' << p.line << ':' << p.column << ": \x1b[31m error\n"
+            std::cerr << "\x1b[0;35m" << name << ':' << p.line << ':' << p.column << ": \x1b[31m error\n"
                       << e.what() << "\x1b[0m";
             parser::line = m.line;
             parser::column = m.column;
@@ -344,14 +351,19 @@ astptr parser::parse_use()
     file.close();
     lexer l;
     std::vector<token> toks = l.lex(code);
-    parser p(toks);
+    parser p(toks, name);
     std::vector<astptr> module;
     insert("print", FUNC, nothing{});
     insert("input", FUNC, nothing{});
     insert("sizeof", FUNC, nothing{});
     while (p.peek().type != token_type::EOF_)
     {
-        module.push_back(p.parse_statement());
+        try {
+            module.push_back(parse_statement());
+        } catch (ParseTimeError &e) {
+            std::cerr << "\x1b[0;35m" << filename << ':' << line << ':' << column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
+            sync();
+        }
     }
     return std::make_unique<ModuleNode>(std::move(module));
 }
@@ -428,7 +440,13 @@ astptr parser::parse_block(const std::string &func = "")
     {
         if (peek().type == RETURN)
             seen_return = true;
-        stmts.push_back(parse_statement());
+        try {
+            stmts.push_back(parse_statement());
+        } catch (ParseTimeError &e) {
+            std::cerr << "\x1b[0;35m" << filename << ':' << line << ':' << column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
+            sync();
+            errors = true;
+        }
     }
     if (!seen_return && func != "")
     {
@@ -484,6 +502,16 @@ astptr parser::parse_func_statement()
     }
     consume(R_BRACKET);
     token return_type = consume();
+    bool is_array = false;
+    u64 size = 1;
+    if(peek().type == L_SQ_BRACKET) {
+        is_array=true;
+        consume(L_SQ_BRACKET);
+        astptr s = parse_expr();
+        eval_ast e;
+        size = e.eval<u64>(s);
+        consume(R_SQ_BRACKET);
+    }
     if (!is_it_type(return_type) && return_type.type != VOID_TYPE)
     {
         parser::line = return_type.line;
@@ -494,7 +522,7 @@ astptr parser::parse_func_statement()
     astptr block = parse_block(id.str_value);
     table.pop_back();
     insert(id.str_value, FUNC, nothing{});
-    return std::make_unique<FuncNode>(id, return_type, std::move(args_), std::move(block));
+    return std::make_unique<FuncNode>(id, return_type, std::move(args_), std::move(block), is_array, size);
 }
 
 astptr parser::parse_if_statement()
@@ -608,6 +636,18 @@ astptr parser::parse_array(bool is_const)
         throw ParseTimeError("\tDeclaring array '" + id + "' without initializing values\n");
     }
     consume(EQ);
+    if(peek().type==ID&&!size_defined) {
+        parser::line = peek().line;
+        parser::column = peek().column;
+        throw ParseTimeError("\tValue of array '" + id + "' must be known at compile time\n");
+    } else if(peek().type==ID) {
+        astptr value = parse_factor();
+        consume(SEMI);
+        std::vector<astptr> values;
+        values.emplace_back(std::move(value));
+        insert(id, type.type, nothing{}, is_const, std::get<u64>(size.value), true);
+        return std::make_unique<ArrayNode>(type, std::move(values), id, variant2int<unsigned long long>(size.value), true);
+    }
     consume(L_SQ_BRACKET);
     std::vector<astptr> values;
     u64 els = 0;
@@ -847,7 +887,13 @@ std::vector<std::unique_ptr<ASTNode>> parser::parse()
     std::vector<std::unique_ptr<ASTNode>> parsed;
     while (peek().type != token_type::EOF_)
     {
-        parsed.push_back(parse_statement());
+        try {
+            parsed.push_back(parse_statement());
+        } catch (ParseTimeError &e) {
+            std::cerr << "\x1b[0;35m" << filename << ':' << line << ':' << column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
+            sync();
+            errors = true;
+        }
     }
     table.pop_back();
     return parsed;

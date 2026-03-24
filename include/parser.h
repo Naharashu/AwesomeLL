@@ -30,9 +30,12 @@ class parser {
     u64 line=0;
     u64 column=0;
     bool factor_decl_mode = false;
-    explicit parser(const std::vector<token> &a) {
+    std::string filename;
+    bool errors=false;
+    explicit parser(const std::vector<token> &a, const std::string &f) {
         src = a;
         indx = 0;
+        filename = f;
     }
     
     astptr parse_expr();
@@ -58,6 +61,7 @@ class parser {
     astptr parse_array(bool is_const=false);
     astptr parse_vector();
     void parse_comptime();
+    astptr parse_();
     astptr parse_assignment(bool is_const=false, bool comptime=false);
     token consume() {
         if(indx >= src.size()) {
@@ -94,6 +98,17 @@ class parser {
             res.push_back(src.at(i));
         }
         return res;
+    }
+    void sync() {
+        while(true) {
+            token_type c = peek().type;
+            if(c==EOF_) return;
+            if(c==SEMI||c==R_BRACES) {
+                consume();
+                return;
+            }
+            consume();
+        }
     }
     std::vector<std::unique_ptr<ASTNode>>parse();
 };
