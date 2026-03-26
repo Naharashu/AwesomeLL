@@ -888,7 +888,7 @@ astptr parser::parse_method() {
     return std::make_unique<MethodNode>(std::move(children), parent.str_value, search_type(parent.str_value));
 }
 
-astptr parse_vector() {
+astptr parser::parse_vector() {
     return nullptr; // later
 }
 
