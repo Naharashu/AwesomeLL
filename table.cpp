@@ -26,6 +26,15 @@ symbol search(const std::string &name) {
     return symbol{};
 }
 
+symbol* searchptr(const std::string &name) {
+    for(auto &scope : std::ranges::reverse_view(table)) {
+        if(scope.contains(name)) {
+            return &scope.at(name);
+        }
+    }
+    return nullptr;
+}
+
 token_type search_type(const std::string &name) {
     for(auto &scope : std::ranges::reverse_view(table)) {
         if(scope.contains(name)) {

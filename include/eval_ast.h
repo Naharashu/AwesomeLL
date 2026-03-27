@@ -34,7 +34,7 @@ class eval_ast {
             }
             case ast_type::BINARY: {
                 auto n = static_cast<BinaryNode*>(node.get());
-                switch(n->op) {
+                switch(n->op.type) {
                     case PLUS: {
                         return eval_double(n->left) + eval_double(n->right);
                     }
@@ -71,7 +71,7 @@ class eval_ast {
             }
             case ast_type::BINARY: {
                 auto n = static_cast<BinaryNode*>(node.get());
-                switch(n->op) {
+                switch(n->op.type) {
                     case PLUS: {
                         return eval<T>(n->left) + eval<T>(n->right);
                     }

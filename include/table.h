@@ -29,6 +29,7 @@ extern std::unordered_map<std::string, fsymbol> ftable;
 token_value search_value(const std::string &name);
 
 symbol search(const std::string &name);
+symbol* searchptr(const std::string &name);
 
 token_type search_type(const std::string &name);
 

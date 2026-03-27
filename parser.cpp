@@ -100,7 +100,14 @@ astptr parser::parse_factor()
             {
                 eval_ast e;
                 u64 index = e.eval<u64>(i);
-                if (index >= array.size&&!array.is_vector)
+                auto* val = std::get_if<bool>(&array.value);
+                if (val && *val==1)
+                {
+                    parser::line = tok.line;
+                    parser::column = tok.column;
+                    throw ParseTimeError("\tAccesing uninitilyzed area of '" + id + "'\n");
+                }
+                if (index >= array.size)
                 {
                     parser::line = tok.line;
                     parser::column = tok.column;
@@ -118,6 +125,13 @@ astptr parser::parse_factor()
                 std::cerr << "\x1b[0;33mWarning:" << std::to_string(tok.line) << ":" + std::to_string(tok.column)
                           << ":\n\taccesing array '" << id
                           << "' with not compile time index, it may lead to errors \x1b[0m\n";
+                auto* val = get_if<bool>(&array.value);
+                if (val && *val==1)
+                {
+                    parser::line = tok.line;
+                    parser::column = tok.column;
+                    throw ParseTimeError("\tAccesing uninitilyzed area of '" + id + "'\n");
+                }
             consume(R_SQ_BRACKET);
             if (peek().type != EQ)
                 return std::make_unique<ArrayAccessNode>(tok, std::move(i), array.is_vector);
@@ -132,7 +146,7 @@ astptr parser::parse_factor()
             {
                 eval_ast e;
                 u64 index = e.eval<u64>(i);
-                if (index >= array.size&&!array.is_vector)
+                if (index >= array.size)
                 {
                     parser::line = tok.line;
                     parser::column = tok.column;
@@ -226,7 +240,7 @@ astptr parser::parse_and_b()
 
         consume();
         astptr rhs = parse_unary();
-        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op);
     }
 
     return node;
@@ -244,7 +258,7 @@ astptr parser::parse_xor()
 
         consume();
         astptr rhs = parse_and_b();
-        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op);
     }
 
     return node;
@@ -262,7 +276,7 @@ astptr parser::parse_or_b()
 
         consume();
         astptr rhs = parse_xor();
-        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op);
     }
 
     return node;
@@ -280,7 +294,7 @@ astptr parser::parse_term()
 
         consume();
         astptr rhs = parse_or_b();
-        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op);
     }
 
     return node;
@@ -297,7 +311,7 @@ astptr parser::parse_expr()
             break;
         consume();
         astptr rhs = parse_term();
-        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+        node = std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op);
     }
     return node;
 }
@@ -631,10 +645,15 @@ astptr parser::parse_array(bool is_const)
     std::string id = variant2string(consume(ID).str_value);
     if (peek().type == SEMI)
     {
+        consume(SEMI);
+        insert(id, type.type, true, is_const, std::get<u64>(size.value), true);
+        return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id, variant2int<unsigned long long>(size.value), false);
+        /*
         token semi = consume(SEMI);
         parser::line = semi.line;
         parser::column = semi.column;
         throw ParseTimeError("\tDeclaring array '" + id + "' without initializing values\n");
+        */
     }
     consume(EQ);
     if(peek().type==ID&&!size_defined) {
@@ -854,6 +873,14 @@ astptr parser::parse_method() {
             std::vector<astptr> args_;
             u64 arg_i=0;
             fsymbol* f = fsearch(child.str_value);
+            if(child.str_value=="push"&&search(parent.str_value).is_vector) {
+                symbol* a = searchptr(parent.str_value);
+                if(a) a->size++;
+            }  
+            if(child.str_value=="pop"&&search(parent.str_value).is_vector) {
+                symbol* a = searchptr(parent.str_value);
+                if(a) a->size--;
+            }  
             while (peek().type != R_BRACKET)
             {   
                 token c = peek();
@@ -910,18 +937,19 @@ astptr parser::parse_vector(bool is_const) {
     token id = consume(ID);
     if (peek().type == SEMI)
     {
-        token semi = consume(SEMI);
-        parser::line = semi.line;
-        parser::column = semi.column;
-        throw ParseTimeError("\tDeclaring vector '" + id.str_value + "' without initializing values\n");
+        consume(SEMI);
+        insert(id.str_value, type.type, true, is_const, 0, true, false, true);
+        return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id.str_value, 0, false, true);
     }
     consume(EQ);
     if(peek().type==ID) {
         astptr value = parse_factor();
         consume(SEMI);
         std::vector<astptr> values;
+        symbol var = search(peek().str_value);
+        u64 size = var.type!=FUNC ? var.size : 0;
         values.emplace_back(std::move(value));
-        insert(id.str_value, type.type, nothing{}, is_const, 0, true, false, true);
+        insert(id.str_value, type.type, nothing{}, is_const, size, true, false, true);
         return std::make_unique<ArrayNode>(type, std::move(values), id.str_value, 0, true, true);
     }
     consume(L_SQ_BRACKET);

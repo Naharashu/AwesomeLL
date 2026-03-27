@@ -52,11 +52,19 @@ std::string BinaryNode::gen(generator &g)
             g.column = n->tok.column;
         }
     }
-    std::string res = "(" + g.gencode(left) + op2string(op) + g.gencode(right) + ")";
-    if (float_ && op == MOD)
+    std::string r = g.gencode(right);
+    if(r=="0") {
+        g.line = op.line;
+        g.column = op.column;
+        throw TranspileTimeError("\tDivision by zero\n");
+    }
+    std::string res = "(" + g.gencode(left) + op2string(op.type) + g.gencode(right) + ")";
+    if (float_ && op.type == MOD)
     {
         std::string err = "Cannot do modulo for floats, use fmod from stdlib instead:\n\t";
         err += res + '\n';
+        g.line = op.line;
+        g.column = op.column;
         throw TranspileTimeError(err.c_str());
     }
     else if (string_to_int_op)
@@ -370,6 +378,7 @@ std::string ArrayNode::gen(generator &g)
         if(!values.empty()) {
             return "std::vector<"+type_+">"+id + '=' + values_;
         }
+        return "std::vector<"+type_+">"+id;
     }
     std::string type_ = type_in_cpp(type);
     if(is_init) {
@@ -388,7 +397,7 @@ std::string ArrayNode::gen(generator &g)
     }
     else
     {
-        values_ = "";
+        return "std::array<"+type_+','+std::to_string(size)+">"+id;
     }
     return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + values_;
     //return "std::array<"+type_+','+std::to_string(size)+">"+id;

@@ -19,13 +19,13 @@ func main() i32 {
     comptime u64 c = 2;
     //i32[3] i=[1,2,3];
     i32[3] i=array_();
-    i32[2] j=[1,2];
+    i32[2] j;
     i32 f = -3;
     print(floor(3.9));
     vec i32 a = [1,2,3];
     comptime string str = "Hi ^^";
     a.push(4);
     a.pop();
-    print(a[3]);
+    print(j[1]);
     return 0;
 }

@@ -81,8 +81,8 @@ class BinaryNode : public ASTNode {
 public:
   astptr left;
   astptr right;
-  token_type op;
-  BinaryNode(astptr left_, astptr right_, const token_type &op_)
+  token op;
+  BinaryNode(astptr left_, astptr right_, const token &op_)
       : left(std::move(left_)), right(std::move(right_)), op(op_) {
     kind = ast_type::BINARY;
   };
