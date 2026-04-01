@@ -94,13 +94,8 @@ std::string BinaryNode::gen(generator &g)
 
 std::string AssignmentNode::gen(generator &g)
 {
-  if(is_const) {
-    g.line = id.line;
-    g.column = id.column;
-    throw TranspileTimeError("Variable '" + id.str_value + "' is constant\n");
-  }
     std::string value = val ? g.gencode(val) : "";
-    return " " + id.str_value + (value.empty() ? "" : "=" + value);
+    return " " + id + (value.empty() ? "" : "=" + value);
 }
 
 std::string AssignmentNodeExpr::gen(generator &g)
@@ -137,7 +132,7 @@ std::string AssignmentNodeExpr::gen(generator &g)
         type += "uint64_t ";
     if (type_ == AUTO_TYPE)
         type += "auto ";
-    return type + id.str_value + (val ? "=" + g.gencode(val) : "=" + nullval);
+    return type + id + (val ? "=" + g.gencode(val) : "=" + nullval);
 }
 
 std::string UnaryNode::gen(generator &g)
@@ -242,21 +237,24 @@ std::string FuncNode::gen(generator &g)
     code << ") ";
     code << g.gencode(block);
     code << '\n';
-    g.header += code.str();
-    return "";
+    return code.str();
 }
 
 std::string ArgumentNode::gen(generator &g)
 {
     (void)g;
-    std::string type_ = type_in_cpp(type);
+    std::string type_;
+    if(isconst) type_ += "const ";
+    type_ += type_in_cpp(type);
+    if(ref) return type_ + " &" + id.str_value;
     if(is_array) 
-        return "std::array<"+type_+','+std::to_string(size_if_array)+">"+id.str_value;
+        return "std::array<"+type_in_cpp(type)+','+std::to_string(size_if_array)+">"+id.str_value;
     return type_ + id.str_value;
 }
 
 std::string ReturnNode::gen(generator &g)
 {
+    if(!value) return "return";
     return "return (" + g.gencode(value) + ')';
 }
 
@@ -301,10 +299,10 @@ std::string IncDecVarNode::gen(generator &g)
     (void)g;
     if (type == 0)
     {
-        return variant2string(id) + "++";
+        return id + "++";
     }
     else
-        return variant2string(id) + "--";
+        return id + "--";
 }
 
 std::string ForNode::gen(generator &g)
@@ -366,7 +364,7 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
     default:
         break;
     }
-    return id.str_value + op + g.gencode(val);
+    return id + op + g.gencode(val);
 }
 
 std::string ArrayNode::gen(generator &g)
@@ -470,4 +468,20 @@ std::string MethodNode::gen(generator &g) {
         code += '.' + g.gencode(x);
     }
     return code;
+}
+
+std::string StructNode::gen(generator &g) {
+    std::ostringstream code;
+    code << "struct " << id;
+    code << " {\n";
+    g.indent++;
+    for (auto &x : block)
+    {
+        code << g.pad();
+        code << g.gencode(x);
+        code << ";\n";
+    }
+    g.indent--;
+    code << g.pad() + "}";
+    return code.str();
 }

@@ -52,18 +52,19 @@ class parser {
     astptr parse_for_statement();
     astptr parse_return();
     astptr parse_block(const std::string &func);
-    astptr parse_func_statement();
+    astptr parse_func_statement(const std::string &struct_="");
     astptr parse_use();
     astptr parse_comparison();
     astptr parse_equality();
     astptr parse_and();
     astptr parse_or();
     astptr parse_break_continue();
-    astptr parse_array(bool is_const=false);
-    astptr parse_vector(bool is_const=false);
+    astptr parse_array(bool is_const=false, const std::string &struct_="");
+    astptr parse_vector(bool is_const=false, const std::string &struct_="");
     void parse_comptime();
     astptr parse_method();
-    astptr parse_assignment(bool is_const=false, bool comptime=false);
+    astptr parse_struct();
+    astptr parse_assignment(bool is_const=false, bool comptime=false, const std::string &struct_="");
     token consume() {
         if(indx >= src.size()) {
             throw ParseTimeError("\tUnexpected end of input\n");

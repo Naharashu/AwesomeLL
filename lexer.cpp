@@ -250,6 +250,8 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(VEC, nothing{}, l, col));
       else if (id == "struct")
         lexed.push_back(create_token(STRUCT, nothing{}, l, col));
+      else if (id == "this")
+        lexed.push_back(create_token(THIS, nothing{}, l, col));
       else if (id == "namespace")
         lexed.push_back(create_token(NAMESPACE, nothing{}, l, col));
       else
@@ -394,6 +396,8 @@ std::string disassemble_tok_type(token_type type) {
       return "for";
     case USE:
       return "use";
+    case THIS:
+      return "this";
     case IF:
       return "if";
     case ELIF:

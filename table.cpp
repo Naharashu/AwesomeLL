@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 
+std::vector<std::string> struct_list;
 std::vector<std::unordered_map<std::string, symbol>> table;
 std::unordered_map<std::string, fsymbol> ftable;
 

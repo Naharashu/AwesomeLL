@@ -1,31 +1,26 @@
-use stdlib;
 
-func add(i32 a, i32 b) i32 {
-    return a+b;
+
+func swap(ref i32 a, ref i32 b) void {
+    i32 c = b;
+    b = a;
+    a = c;
+    //return;
 }
 
-func add_(i32[3] a) i32 {
-    return a[0]+a[1];
-}
-
-func array_() i32[3] {
-    i32[3] a = [1,2,3];
-    return a;
-}
+struct cool {
+    i32 x=0;
+    func inc() void {
+        x++;
+        return;
+    }
+};
 
 func main() i32 {
-    comptime f64 a = 3;
-    comptime f64 b = a + 0.14;
-    comptime u64 c = 2;
-    //i32[3] i=[1,2,3];
-    i32[3] i=array_();
-    i32[2] j;
     i32 f = -3;
-    print(floor(3.9));
-    vec i32 a = [1,2,3];
-    comptime string str = "Hi ^^";
-    a.push(4);
-    a.pop();
-    print(3&2);
+    i32 d = -2;
+    
+    swap(f, d);
+    print(f); // should be -2
+    cool a;
     return 0;
 }

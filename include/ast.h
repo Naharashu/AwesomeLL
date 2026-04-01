@@ -70,7 +70,9 @@ public:
   token id;
   bool is_array;
   u64 size_if_array=0;
-  ArgumentNode(const token& t, const token& id_, bool isarr, u64 s) : type(t), id(id_), is_array(isarr), size_if_array(s) {
+  bool ref=false;
+  bool isconst=false;
+  ArgumentNode(const token& t, const token& id_, bool isarr, u64 s, bool f=false, bool ic=false) : type(t), id(id_), is_array(isarr), size_if_array(s), ref(f), isconst(ic) {
     kind = ast_type::FUNC_ARG;
   };
   void print() const override {}
@@ -124,10 +126,10 @@ public:
 
 class AssignmentNode : public ASTNode {
 public:
-  token id;
+  std::string id;
   astptr val;
   bool is_const;
-  AssignmentNode(const token &id_, astptr val_, bool isconst=false)
+  AssignmentNode(const std::string &id_, astptr val_, bool isconst=false)
       : id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::ASSIGN;
   };
@@ -138,30 +140,28 @@ public:
 class AssignmentNodeExpr : public ASTNode {
 public:
   token_type type_;
-  token id;
+  std::string id;
   astptr val;
   bool is_const;
-  AssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_, bool isconst=false)
+  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false)
       : type_(t_), id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::DEFINEVAR;
   };
 
-  void print() const override { std::cout << id.type << '\n'; }
   std::string gen(generator &g) override;
 };
 
 class ReAssignmentNodeExpr : public ASTNode {
 public:
   token_type type_;
-  token id;
+  std::string id;
   astptr val;
   bool is_const;
-  ReAssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_, bool isconst=false)
+  ReAssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false)
       : type_(t_), id(id_), val(std::move(val_)), is_const(isconst) {
     kind = ast_type::REASSIGNVAR;
   };
 
-  void print() const override { std::cout << id.type << '\n'; }
   std::string gen(generator &g) override;
 };
 
@@ -277,8 +277,8 @@ public:
 class IncDecVarNode : public ASTNode {
 public:
   u8 type;
-  token_value id;
-  IncDecVarNode(u8 t,const token_value &n) : type(t), id(n) {}
+  std::string id;
+  IncDecVarNode(u8 t,const std::string &n) : type(t), id(n) {}
   std::string gen(generator &g) override;
 };
 
@@ -343,3 +343,10 @@ class MethodNode : public ASTNode {
   std::string gen(generator &g) override;
 };
 
+class StructNode : public ASTNode {
+  public:
+  std::string id;
+  std::vector<astptr> block;
+  StructNode(const std::string &id_, std::vector<astptr> b) : id(id_), block(std::move(b)) {}
+  std::string gen(generator &g) override;
+};

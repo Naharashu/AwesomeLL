@@ -20,9 +20,10 @@ using fsymbol = struct fsymbol {
     token_type type=EOF_;
     std::vector<symbol> args;
     bool comptime=false;
+    std::string struct_="";
 };
 
-
+extern std::vector<std::string> struct_list;
 extern std::vector<std::unordered_map<std::string, symbol>> table;
 extern std::unordered_map<std::string, fsymbol> ftable;
 
@@ -56,8 +57,8 @@ inline bool fexist(const std::string &name) {
     return true;
 }
 
-inline void finsert(const std::string &name, const token_type &type, const std::vector<symbol> &args) {
-    ftable.insert_or_assign(name, fsymbol{type, args, false});
+inline void finsert(const std::string &name, const token_type &type, const std::vector<symbol> &args, const std::string &stru="") {
+    ftable.insert_or_assign(name, fsymbol{type, args, false, stru});
 }
 
 inline void finsert_arg(const std::string &name, const symbol &arg) {
@@ -65,4 +66,11 @@ inline void finsert_arg(const std::string &name, const symbol &arg) {
     if(func) {
         func->args.emplace_back(arg);
     }
+}
+
+inline bool is_struct(const std::string &name) {
+    for(auto &x : struct_list) {
+        if(x==name) return true;
+    }
+    return false;
 }
