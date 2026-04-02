@@ -59,7 +59,7 @@ public:
         continue;
 
       if (x->kind != ast_type::MODULE && x->kind != ast_type::BLOCK &&
-          x->kind != ast_type::IF)
+          x->kind != ast_type::IF&&x->kind!=ast_type::FUNC)
         cpp_code << c + ';';
 
       else

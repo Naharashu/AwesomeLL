@@ -132,6 +132,8 @@ std::string AssignmentNodeExpr::gen(generator &g)
         type += "uint64_t ";
     if (type_ == AUTO_TYPE)
         type += "auto ";
+    if (struct_id!="")
+        return struct_id + " " + id;
     return type + id + (val ? "=" + g.gencode(val) : "=" + nullval);
 }
 
@@ -255,7 +257,7 @@ std::string ArgumentNode::gen(generator &g)
 std::string ReturnNode::gen(generator &g)
 {
     if(!value) return "return";
-    return "return (" + g.gencode(value) + ')';
+    return "return " + g.gencode(value);
 }
 
 std::string IfNode::gen(generator &g)

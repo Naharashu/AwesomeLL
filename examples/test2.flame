@@ -9,8 +9,8 @@ func swap(ref i32 a, ref i32 b) void {
 
 struct cool {
     i32 x=0;
-    func inc() void {
-        x++;
+    func inc(i32 i) void {
+        x+=i;
         return;
     }
 };
@@ -22,5 +22,7 @@ func main() i32 {
     swap(f, d);
     print(f); // should be -2
     cool a;
+    a.inc(1);
+    print(a.x);
     return 0;
 }

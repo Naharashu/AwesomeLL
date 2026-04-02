@@ -143,8 +143,9 @@ public:
   std::string id;
   astptr val;
   bool is_const;
-  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false)
-      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst) {
+  std::string struct_id;
+  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="")
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s) {
     kind = ast_type::DEFINEVAR;
   };
 

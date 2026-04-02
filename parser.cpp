@@ -485,11 +485,7 @@ astptr parser::parse_block(const std::string &func = "")
             errors = true;
         }
     }
-    if (!seen_return && func != "")
-    {
-        std::cerr << "\x1b[0;33mWarning: function " << func
-                  << " doesnt have returning, it may lead to errors \x1b[0m\n";
-    }
+    if(seen_return) returning=true;
     consume(R_BRACES);
     table.pop_back();
     return std::make_unique<BlockNode>(std::move(stmts));
@@ -567,6 +563,11 @@ astptr parser::parse_func_statement(const std::string &struct_)
                              ", expected i8..64, u8..64, bool, string, void, f32, f64, auto\n");
     }
     astptr block = parse_block(id.str_value);
+    if(!returning&&return_type.type!=VOID_TYPE) {
+        parser::line = id.line;
+        parser::column = id.column;
+        throw ParseTimeError("\tFunction " + id.str_value + " doesnt have returning\n");
+    }
     table.pop_back();
     insert(struct_+id.str_value, FUNC, nothing{});
     return std::make_unique<FuncNode>(id, return_type, std::move(args_), std::move(block), is_array, size);
@@ -775,6 +776,13 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
 {
     if (is_const)
         consume(CONST);
+    if(is_struct(peek().str_value)) {
+        token struct_id = consume(ID);
+        token id = consume(ID);
+        consume(SEMI);
+        insert(id.str_value, STRUCT, struct_id.str_value);
+        return std::make_unique<AssignmentNodeExpr>(STRUCT, id.str_value, astptr{}, is_const, struct_id.str_value);
+    }
     if(peek().type==VEC) return parse_vector(is_const, struct_+'.');
     if (peek().type == ID && (peek(1).type == L_BRACKET || peek(1).type == L_SQ_BRACKET))
     {
@@ -824,7 +832,7 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
                 consume(SEMI);
             return std::make_unique<ReAssignmentNodeExpr>(op, struct_+type.str_value, std::move(value), is_const);
         }
-        if (!exist(variant2string(type.str_value)))
+        if (!exist(variant2string(type.str_value))&&!is_struct(type.str_value))
         {
             parser::line = type.line;
             parser::column = type.column;
@@ -899,7 +907,7 @@ astptr parser::parse_method() {
     while(peek().type==DOT) {
         consume(DOT);
         token child = consume(ID);
-        if(!exist(parent.str_value)) {
+        if(!exist(child.str_value)&&!exist(variant2string(search(parent.str_value).value)+child.str_value)) {
             parser::line = child.line;
             parser::column = child.column;
             throw ParseTimeError("\tUse undeclared variable '"+child.str_value+"'\n");
@@ -1022,6 +1030,7 @@ astptr parser::parse_struct() {
     }
     consume(R_BRACES);
     consume(SEMI);
+    struct_list.push_back(id.str_value);
     return std::make_unique<StructNode>(id.str_value, std::move(block));
 }
 

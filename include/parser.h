@@ -37,6 +37,7 @@ class parser {
         indx = 0;
         filename = f;
     }
+    bool returning=false;
     
     astptr parse_expr();
     astptr parse_shift();
